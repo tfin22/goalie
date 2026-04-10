@@ -426,6 +426,54 @@
       background: linear-gradient(90deg, #1a6b3c, #6fcf97);
     }
 
+    /* ── Level card ── */
+    .level-card {
+      background: #07192e;
+      border: 1.5px solid #1e3a56;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .level-card .level-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .level-card .level-name {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .level-card .level-next {
+      font-size: 0.75rem;
+      color: #4a7a9b;
+    }
+
+    .level-bar-wrap {
+      height: 6px;
+      background: #1a2e45;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .level-bar-fill {
+      height: 6px;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .level-max {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 4px;
+    }
+
     /* ── Best scores ── */
     .best-scores {
       margin-top: 28px;
@@ -616,6 +664,8 @@
     <p>Each question puts you in a real match situation.</p>
     <p>Pick the best goalkeeper decision — then see the coaching breakdown.</p>
 
+    <div id="levelCard" class="level-card"></div>
+
     <div class="category-grid" id="categoryGrid"></div>
 
     <p style="margin-top:0; margin-bottom:12px; font-size:0.82rem; color:#4a7a9b;">
@@ -693,7 +743,8 @@
     <h2 id="endHeading">Full Time!</h2>
     <div class="grade" id="gradeEmoji"></div>
     <p id="endScoreText" style="font-size:1.3rem; font-weight:700; color:#e8f0fe;"></p>
-    <p id="endPointsText" style="font-size:1.5rem; font-weight:800; color:#f2c94c; margin:4px 0 8px;"></p>
+    <p id="endPointsText" style="font-size:1.5rem; font-weight:800; color:#f2c94c; margin:4px 0 4px;"></p>
+    <p id="endLevelText" style="font-size:0.8rem; color:#4a7a9b; margin-bottom:8px;"></p>
     <p id="endMessage"></p>
     <div class="breakdown" id="categoryBreakdown"></div>
     <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:8px;">
@@ -1598,6 +1649,71 @@ const questions = [
 ];
 
 // ═══════════════════════════════════════════
+// DIFFICULTY ASSIGNMENT
+// ═══════════════════════════════════════════
+(function() {
+  const catCounts = {}, catIdx = {};
+  questions.forEach(q => { catCounts[q.category] = (catCounts[q.category] || 0) + 1; });
+  questions.forEach(q => {
+    catIdx[q.category] = (catIdx[q.category] || 0);
+    const pct = catIdx[q.category] / catCounts[q.category];
+    q.difficulty = pct < 0.25 ? 1 : pct < 0.5 ? 2 : pct < 0.75 ? 3 : 4;
+    catIdx[q.category]++;
+  });
+})();
+
+// ═══════════════════════════════════════════
+// LEVELS
+// ═══════════════════════════════════════════
+const LEVELS = [
+  { name: 'Beginner',  threshold: 0,   maxDiff: 1, color: '#4a9bd8' },
+  { name: 'Academy',   threshold: 50,  maxDiff: 2, color: '#6fcf97' },
+  { name: 'Semi Pro',  threshold: 100, maxDiff: 3, color: '#f2c94c' },
+  { name: 'Pro',       threshold: 150, maxDiff: 4, color: '#eb5757' },
+];
+
+function getTotalAnswered() {
+  try { return parseInt(localStorage.getItem('gk_total_answered') || '0'); } catch(e) { return 0; }
+}
+
+function setTotalAnswered(n) {
+  try { localStorage.setItem('gk_total_answered', n); } catch(e) {}
+}
+
+function getLevelForCount(n) {
+  let level = LEVELS[0];
+  for (const l of LEVELS) { if (n >= l.threshold) level = l; }
+  return level;
+}
+
+function renderLevelCard() {
+  const answered = getTotalAnswered();
+  const level = getLevelForCount(answered);
+  const levelIdx = LEVELS.indexOf(level);
+  const next = LEVELS[levelIdx + 1];
+  const card = document.getElementById('levelCard');
+
+  let progressHtml;
+  if (!next) {
+    progressHtml = `<div class="level-max" style="color:${level.color}">Max level reached — you're a Pro! 🏆</div>`;
+  } else {
+    const inLevel = answered - level.threshold;
+    const needed = next.threshold - level.threshold;
+    const pct = Math.min(100, Math.round(inLevel / needed * 100));
+    progressHtml = `
+      <div class="level-bar-wrap"><div class="level-bar-fill" style="width:${pct}%;background:${level.color}"></div></div>
+      <div class="level-next">${inLevel} / ${needed} questions to ${next.name}</div>`;
+  }
+
+  card.innerHTML = `
+    <div class="level-header">
+      <span class="level-name" style="color:${level.color}">${level.name}</span>
+      <span class="level-next">Level ${levelIdx + 1} of ${LEVELS.length}</span>
+    </div>
+    ${progressHtml}`;
+}
+
+// ═══════════════════════════════════════════
 // GAME STATE
 // ═══════════════════════════════════════════
 const categories = [...new Set(questions.map(q => q.category))];
@@ -1665,12 +1781,12 @@ function setMode(mode) {
 }
 
 function buildQueue() {
-  let pool = questions.filter(q => state.selectedCategories.has(q.category));
-  // shuffle
+  const maxDiff = getLevelForCount(getTotalAnswered()).maxDiff;
+  let pool = questions.filter(q => state.selectedCategories.has(q.category) && q.difficulty <= maxDiff);
   pool = pool.sort(() => Math.random() - 0.5);
-  if (state.mode === 'random10') pool = pool.slice(0, 10);
-  if (state.mode === 'random20') pool = pool.slice(0, 20);
-  if (state.mode === 'random30') pool = pool.slice(0, 30);
+  if (state.mode === 'random10') pool = pool.slice(0, Math.min(10, pool.length));
+  if (state.mode === 'random20') pool = pool.slice(0, Math.min(20, pool.length));
+  if (state.mode === 'random30') pool = pool.slice(0, Math.min(30, pool.length));
   return pool;
 }
 
@@ -1744,6 +1860,15 @@ function selectAnswer(chosen) {
   // Stats
   if (!state.categoryStats[q.category]) state.categoryStats[q.category] = {correct:0,total:0};
   state.categoryStats[q.category].total++;
+
+  // Lifetime progress & level-up detection
+  const prevLevel = getLevelForCount(getTotalAnswered());
+  setTotalAnswered(getTotalAnswered() + 1);
+  const newLevel = getLevelForCount(getTotalAnswered());
+  if (newLevel.threshold > prevLevel.threshold) {
+    showBonusToast(`🎉 Level up! You're now ${newLevel.name}!`);
+    renderLevelCard();
+  }
 
   if (isCorrect) {
     state.correct++;
@@ -1931,10 +2056,12 @@ function showEnd() {
 
   saveScore(state.points, pct, state.correct, total, state.mode);
 
+  const currentLevel = getLevelForCount(getTotalAnswered());
   document.getElementById('endHeading').textContent = state.gameOver ? 'Game Over!' : 'Full Time!';
   document.getElementById('endHeading').style.color = state.gameOver ? '#eb5757' : '#6fcf97';
   document.getElementById('gradeEmoji').textContent = emoji;
   document.getElementById('endScoreText').textContent = `${state.correct}/${total} answered — ${pct}%${state.gameOver ? '' : ' — ' + grade}`;
+  document.getElementById('endLevelText').textContent = `Playing at: ${currentLevel.name}`;
   document.getElementById('endPointsText').textContent = `⭐ ${state.points} points`;
   document.getElementById('endMessage').textContent = msg;
 
@@ -1986,6 +2113,7 @@ function show(id) {
 }
 
 function goToStart() {
+  renderLevelCard();
   renderBestScores();
   show('startScreen');
 }
@@ -2042,6 +2170,7 @@ function resetScores() {
 
 // ── Start ──
 init();
+renderLevelCard();
 renderBestScores();
 </script>
 </body>
