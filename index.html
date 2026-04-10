@@ -565,6 +565,7 @@
     <div class="breakdown" id="categoryBreakdown"></div>
     <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:8px;">
       <button class="btn btn-primary" onclick="startGame()">Play Again</button>
+      <button class="btn btn-primary" id="redoWrongBtn" onclick="redoWrong()" style="background:#b85c1a; display:none;">Redo Wrong Answers</button>
       <button class="btn btn-secondary" onclick="goToStart()">Change Settings</button>
     </div>
   </div>
@@ -1476,7 +1477,8 @@ let state = {
   wrong: 0,
   streak: 0,
   answered: false,
-  categoryStats: {}
+  categoryStats: {},
+  wrongAnswers: []
 };
 
 // ═══════════════════════════════════════════
@@ -1542,6 +1544,7 @@ function startGame() {
   state.streak = 0;
   state.answered = false;
   state.categoryStats = {};
+  state.wrongAnswers = [];
   categories.forEach(c => { state.categoryStats[c] = { correct: 0, total: 0 }; });
 
   show('quizScreen');
@@ -1606,6 +1609,7 @@ function selectAnswer(chosen) {
   } else {
     state.wrong++;
     state.streak = 0;
+    state.wrongAnswers.push(q);
   }
 
   updateScoreBar();
@@ -1756,7 +1760,27 @@ function showEnd() {
     breakdown.appendChild(card);
   });
 
+  const redoBtn = document.getElementById('redoWrongBtn');
+  redoBtn.style.display = state.wrongAnswers.length > 0 ? 'inline-block' : 'none';
+
   show('endScreen');
+}
+
+function redoWrong() {
+  const wrongQs = state.wrongAnswers.slice().sort(() => Math.random() - 0.5);
+  state.queue = wrongQs;
+  state.index = 0;
+  state.correct = 0;
+  state.wrong = 0;
+  state.streak = 0;
+  state.answered = false;
+  state.categoryStats = {};
+  state.wrongAnswers = [];
+  categories.forEach(c => { state.categoryStats[c] = { correct: 0, total: 0 }; });
+
+  show('quizScreen');
+  updateScoreBar();
+  renderQuestion();
 }
 
 // ═══════════════════════════════════════════
