@@ -383,6 +383,51 @@
       background: linear-gradient(90deg, #1a6b3c, #6fcf97);
     }
 
+    /* ── Best scores ── */
+    .best-scores {
+      margin-top: 28px;
+      text-align: left;
+    }
+
+    .best-scores h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #4a7a9b;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: #07192e;
+      border: 1px solid #1e3a56;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+    }
+
+    .score-row .score-rank {
+      color: #4a7a9b;
+      font-weight: 700;
+      min-width: 24px;
+    }
+
+    .score-row .score-pct {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #6fcf97;
+    }
+
+    .score-row .score-detail {
+      color: #7a9cc4;
+      font-size: 0.78rem;
+      text-align: right;
+    }
+
     /* ── Start screen ── */
     .start-screen {
       text-align: center;
@@ -508,6 +553,8 @@
     <button class="btn btn-primary" style="font-size:1rem; padding:14px 40px;" onclick="startGame()">
       Start Quiz
     </button>
+
+    <div class="best-scores" id="bestScoresPanel"></div>
   </div>
 
   <!-- Quiz screen -->
@@ -1744,6 +1791,8 @@ function showEnd() {
   else if (pct >= 60) { grade='Developing'; emoji='💪'; msg='Good foundation. Review the explanations on the ones you missed — they\'ll come quickly.'; }
   else { grade='Keep Training'; emoji='📚'; msg='Don\'t worry — these are tough scenarios. Go through the explanations and try again.'; }
 
+  saveScore(pct, state.correct, total, state.mode);
+
   document.getElementById('gradeEmoji').textContent = emoji;
   document.getElementById('endScoreText').textContent = `${state.correct}/${total} — ${pct}% — ${grade}`;
   document.getElementById('endMessage').textContent = msg;
@@ -1793,11 +1842,45 @@ function show(id) {
 }
 
 function goToStart() {
+  renderBestScores();
   show('startScreen');
+}
+
+// ═══════════════════════════════════════════
+// BEST SCORES
+// ═══════════════════════════════════════════
+function saveScore(pct, correct, total, mode) {
+  const scores = loadScores();
+  const modeLabels = { all: 'All Qs', random10: 'Quick 10', random20: 'Match 20', random30: 'Full 30' };
+  const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  scores.push({ pct, correct, total, mode: modeLabels[mode] || mode, date });
+  scores.sort((a, b) => b.pct - a.pct || b.correct - a.correct);
+  scores.splice(5); // keep top 5
+  try { localStorage.setItem('gk_best_scores', JSON.stringify(scores)); } catch(e) {}
+}
+
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem('gk_best_scores')) || []; } catch(e) { return []; }
+}
+
+function renderBestScores() {
+  const panel = document.getElementById('bestScoresPanel');
+  const scores = loadScores();
+  if (scores.length === 0) { panel.innerHTML = ''; return; }
+  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  panel.innerHTML = '<h3>Best Scores</h3>' + scores.map((s, i) =>
+    `<div class="score-row">
+      <span class="score-rank">${medals[i]}</span>
+      <span class="score-pct">${s.pct}%</span>
+      <span style="color:#e8f0fe; font-weight:700">${s.correct}/${s.total}</span>
+      <span class="score-detail">${s.mode}<br>${s.date}</span>
+    </div>`
+  ).join('');
 }
 
 // ── Start ──
 init();
+renderBestScores();
 </script>
 </body>
 </html>
