@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Goalkeeper Tactics Quiz</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0a1628;
+      color: #e8f0fe;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      background: #0d2137;
+      border-bottom: 3px solid #1a6b3c;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header .glove {
+      font-size: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #6fcf97;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      font-size: 0.8rem;
+      color: #7a9cc4;
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      height: 5px;
+      background: #1a2e45;
+    }
+
+    .progress-bar {
+      height: 5px;
+      background: linear-gradient(90deg, #1a6b3c, #6fcf97);
+      transition: width 0.4s ease;
+    }
+
+    main {
+      width: 100%;
+      max-width: 780px;
+      padding: 24px 20px 48px;
+      flex: 1;
+    }
+
+    /* ── Category filter ── */
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid #2a4a6a;
+      background: transparent;
+      color: #7a9cc4;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-btn:hover { border-color: #6fcf97; color: #6fcf97; }
+    .filter-btn.active { background: #1a6b3c; border-color: #6fcf97; color: #fff; }
+
+    /* ── Card ── */
+    .card {
+      background: #0d2137;
+      border: 1.5px solid #1e3a56;
+      border-radius: 16px;
+      padding: 28px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .tag {
+      background: #102040;
+      border: 1px solid #2a4a6a;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #5a9bd8;
+      font-weight: 600;
+    }
+
+    .counter {
+      font-size: 0.78rem;
+      color: #4a7a9b;
+    }
+
+    .scenario-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #4a7a9b;
+      margin-bottom: 6px;
+    }
+
+    .scenario {
+      font-size: 1rem;
+      color: #9bbcd8;
+      font-style: italic;
+      background: #07192e;
+      border-left: 3px solid #1a6b3c;
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .question {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #e8f0fe;
+      line-height: 1.45;
+      margin-bottom: 22px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 13px 18px;
+      border-radius: 10px;
+      border: 1.5px solid #1e3a56;
+      background: #07192e;
+      color: #c8daf0;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      line-height: 1.4;
+      -webkit-tap-highlight-color: rgba(106,207,151,0.2);
+      touch-action: manipulation;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: #5a9bd8;
+      background: #0d2a47;
+      color: #fff;
+    }
+
+    .option-btn.correct {
+      background: #0d3d20;
+      border-color: #6fcf97;
+      color: #b4f0cc;
+    }
+
+    .option-btn.wrong {
+      background: #3d0d0d;
+      border-color: #eb5757;
+      color: #f0b4b4;
+    }
+
+    .option-btn.reveal-correct {
+      background: #0d3d20;
+      border-color: #6fcf97;
+      color: #b4f0cc;
+      opacity: 0.7;
+    }
+
+    /* ── Explanation panel ── */
+    .explanation {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: #07192e;
+      border: 1px solid #1e3a56;
+      display: none;
+    }
+
+    .explanation.show { display: block; animation: fadeIn 0.25s ease; }
+
+    .explanation .result-line {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .result-line.correct { color: #6fcf97; }
+    .result-line.wrong   { color: #eb5757; }
+
+    .explanation p {
+      font-size: 0.9rem;
+      color: #9bbcd8;
+      line-height: 1.55;
+    }
+
+    .coaching-tip {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: #5a9bd8;
+      font-style: italic;
+    }
+
+    /* ── Nav buttons ── */
+    .nav-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 22px;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 11px 24px;
+      border-radius: 9px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: rgba(106,207,151,0.2);
+      touch-action: manipulation;
+    }
+
+    .btn-primary {
+      background: #1a6b3c;
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #21894d; }
+    .btn-primary:disabled { background: #0d3d20; color: #4a7a5a; cursor: default; }
+
+    .btn-secondary {
+      background: #102040;
+      color: #7a9cc4;
+      border: 1.5px solid #1e3a56;
+    }
+
+    .btn-secondary:hover { border-color: #5a9bd8; color: #c8daf0; }
+
+    .btn-skip {
+      background: transparent;
+      color: #4a7a9b;
+      border: 1.5px solid #1e3a56;
+      font-size: 0.82rem;
+      padding: 9px 16px;
+    }
+
+    .btn-skip:hover { color: #7a9cc4; border-color: #2a4a6a; }
+
+    /* ── Score panel ── */
+    .score-strip {
+      display: flex;
+      gap: 24px;
+      padding: 12px 0;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #1e3a56;
+    }
+
+    .score-item { text-align: center; }
+
+    .score-item .val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #6fcf97;
+    }
+
+    .score-item .lbl {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #4a7a9b;
+    }
+
+    /* ── End screen ── */
+    .end-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .end-screen h2 {
+      font-size: 2rem;
+      color: #6fcf97;
+      margin-bottom: 10px;
+    }
+
+    .end-screen .grade {
+      font-size: 4rem;
+      margin: 12px 0;
+    }
+
+    .end-screen p {
+      font-size: 1rem;
+      color: #9bbcd8;
+      margin-bottom: 6px;
+    }
+
+    .end-screen .breakdown {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .breakdown-card {
+      background: #07192e;
+      border: 1px solid #1e3a56;
+      border-radius: 10px;
+      padding: 12px 20px;
+      min-width: 130px;
+    }
+
+    .breakdown-card .cat-name {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #4a7a9b;
+      margin-bottom: 6px;
+    }
+
+    .breakdown-card .cat-score {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #e8f0fe;
+    }
+
+    .breakdown-card .cat-bar {
+      height: 4px;
+      background: #1a2e45;
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .breakdown-card .cat-fill {
+      height: 4px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #1a6b3c, #6fcf97);
+    }
+
+    /* ── Start screen ── */
+    .start-screen {
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .start-screen h2 {
+      font-size: 1.8rem;
+      color: #6fcf97;
+      margin-bottom: 10px;
+    }
+
+    .start-screen p {
+      color: #9bbcd8;
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+      text-align: left;
+    }
+
+    .cat-card {
+      background: #07192e;
+      border: 1.5px solid #1e3a56;
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: rgba(106,207,151,0.2);
+      touch-action: manipulation;
+    }
+
+    .cat-card * {
+      pointer-events: none;
+    }
+
+    .cat-card:hover, .cat-card.selected {
+      border-color: #6fcf97;
+      background: #0d2a47;
+    }
+
+    .cat-card .cat-icon { font-size: 1.5rem; margin-bottom: 6px; }
+
+    .cat-card h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #e8f0fe;
+      margin-bottom: 4px;
+    }
+
+    .cat-card p {
+      font-size: 0.75rem;
+      color: #4a7a9b;
+      margin: 0;
+    }
+
+    .mode-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .mode-btn {
+      padding: 10px 22px;
+      border-radius: 10px;
+      border: 1.5px solid #1e3a56;
+      background: #07192e;
+      color: #7a9cc4;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: rgba(106,207,151,0.2);
+      touch-action: manipulation;
+    }
+
+    .mode-btn.active { background: #1a6b3c; border-color: #6fcf97; color: #fff; }
+    .mode-btn:hover { border-color: #5a9bd8; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="glove">🧤</span>
+  <div>
+    <h1>Goalkeeper Tactics Quiz</h1>
+    <p>Div 1 level scenarios — sharpen your decision-making</p>
+  </div>
+</header>
+<div class="progress-bar-wrap">
+  <div class="progress-bar" id="progressBar" style="width:0%"></div>
+</div>
+
+<main>
+  <!-- Start screen -->
+  <div id="startScreen" class="start-screen">
+    <h2>Ready to train? 🧤</h2>
+    <p>Each question puts you in a real match situation.</p>
+    <p>Pick the best goalkeeper decision — then see the coaching breakdown.</p>
+
+    <div class="category-grid" id="categoryGrid"></div>
+
+    <p style="margin-top:0; margin-bottom:12px; font-size:0.82rem; color:#4a7a9b;">
+      Click categories above to filter, or play all.
+    </p>
+
+    <div class="mode-row">
+      <button class="mode-btn active" id="modeAll" onclick="setMode('all')">All Questions</button>
+      <button class="mode-btn" id="modeRandom" onclick="setMode('random10')">Quick 10</button>
+      <button class="mode-btn" id="modeRandom20" onclick="setMode('random20')">Match 20</button>
+      <button class="mode-btn" id="modeRandom30" onclick="setMode('random30')">Full 30</button>
+    </div>
+
+    <button class="btn btn-primary" style="font-size:1rem; padding:14px 40px;" onclick="startGame()">
+      Start Quiz
+    </button>
+  </div>
+
+  <!-- Quiz screen -->
+  <div id="quizScreen" class="hidden">
+    <div class="score-strip">
+      <div class="score-item">
+        <div class="val" id="scoreCorrect">0</div>
+        <div class="lbl">Correct</div>
+      </div>
+      <div class="score-item">
+        <div class="val" id="scoreWrong" style="color:#eb5757">0</div>
+        <div class="lbl">Wrong</div>
+      </div>
+      <div class="score-item">
+        <div class="val" id="scoreStreak" style="color:#f2c94c">0</div>
+        <div class="lbl">Streak 🔥</div>
+      </div>
+      <div class="score-item">
+        <div class="val" id="scoreRemaining">—</div>
+        <div class="lbl">Left</div>
+      </div>
+    </div>
+
+    <div class="card" id="questionCard">
+      <div class="card-meta">
+        <span class="tag" id="questionTag"></span>
+        <span class="counter" id="questionCounter"></span>
+      </div>
+      <div class="scenario-label">The Situation</div>
+      <div class="scenario" id="scenarioText"></div>
+      <div class="question" id="questionText"></div>
+      <div class="options" id="optionsContainer"></div>
+
+      <div class="explanation" id="explanationPanel">
+        <div class="result-line" id="resultLine"></div>
+        <p id="explanationText"></p>
+        <p class="coaching-tip" id="coachingTip"></p>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-skip" onclick="skipQuestion()">Skip →</button>
+      <button class="btn btn-secondary" onclick="goToStart()">↩ Menu</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Next Question →</button>
+    </div>
+  </div>
+
+  <!-- End screen -->
+  <div id="endScreen" class="hidden end-screen">
+    <h2>Full Time!</h2>
+    <div class="grade" id="gradeEmoji"></div>
+    <p id="endScoreText" style="font-size:1.3rem; font-weight:700; color:#e8f0fe;"></p>
+    <p id="endMessage"></p>
+    <div class="breakdown" id="categoryBreakdown"></div>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:8px;">
+      <button class="btn btn-primary" onclick="startGame()">Play Again</button>
+      <button class="btn btn-secondary" onclick="goToStart()">Change Settings</button>
+    </div>
+  </div>
+</main>
+
+<script>
+// ═══════════════════════════════════════════
+// QUESTION BANK
+// ═══════════════════════════════════════════
+const questions = [
+
+  // ── POSITIONING ──
+  {
+    category: "Positioning",
+    scenario: "Your team is defending a corner. The ball is being swung in from the right side. The goal is full-size and you're not the tallest — your defenders and a couple of attackers are in the 6-yard box.",
+    question: "Where should you start?",
+    options: [
+      "On your goal line in the middle of the goal — you can react from there",
+      "A step or two off your line near the back post, so you can move forward into the ball",
+      "On the penalty spot so you can command the whole box",
+      "Glued to the near post — that's the danger zone"
+    ],
+    correct: 1,
+    explanation: "An inswinging corner from the right will travel towards the back post area. Starting a step or two off your line near the back post gives you a running start to attack the ball forwards — which is much stronger than jumping backwards or standing flat-footed. You don't need to be massive to claim crosses if your starting position and timing are right.",
+    tip: "You might not be the tallest keeper on the pitch yet, but good positioning and timing beat height every time. Attack the ball going forward — it's much harder for attackers to beat you that way."
+  },
+  {
+    category: "Positioning",
+    scenario: "A striker has got in behind your centre-back and is running at you 1v1. She's about 20 yards out and heading straight for goal.",
+    question: "What do you do with your positioning?",
+    options: [
+      "Stay on your line and make yourself as big as possible when she shoots",
+      "Sprint out to the edge of the box to close her down immediately",
+      "Come off your line to narrow the angle, then set your feet and get balanced before she gets into shooting range",
+      "Stay on your six-yard line and wait"
+    ],
+    correct: 2,
+    explanation: "Coming off your line narrows the angle — she has less goal to aim at. But the key bit is getting set and balanced before she shoots. If you're still running forward when the shot comes, you can't change direction or dive properly. Come out, then stop and get into your ready stance. At your age, strikers will try to go round you if you rush out too far — so hold your ground once you've narrowed the angle.",
+    tip: "Advance, then set. Your feet should be shoulder-width apart, weight on the balls of your feet, hands ready. If you're still moving when the shot comes, you've come too far or too late."
+  },
+  {
+    category: "Positioning",
+    scenario: "The ball is out on the right wing, about 25 yards from your goal. Their winger is taking on your left back.",
+    question: "Where should you be standing in your goal?",
+    options: [
+      "Dead centre between the posts",
+      "Slightly across towards the near post (your left as you face the play)",
+      "Right on the near post",
+      "Towards the far post in case of a cross"
+    ],
+    correct: 1,
+    explanation: "You shade towards the near post side because that's where the most likely shot goes — it's the shortest route to goal. But you don't go all the way to the post, because you'd leave the far post wide open. A step or two across from centre covers the near post shot and still lets you dive to the far post for a cross or a curled shot.",
+    tip: "Imagine a line from the ball to each post — you want to be roughly on the line that splits that angle in half, maybe a touch nearer the near post. Adjust every time the ball moves. Shuffle, don't cross your feet."
+  },
+  {
+    category: "Positioning",
+    scenario: "Your team has the ball and your defenders are pushed up to the halfway line. You're standing on your six-yard line.",
+    question: "Is your position right?",
+    options: [
+      "Yes — goalkeepers should always stay near their goal",
+      "No — you should be up near the edge of your box to cut out any ball played in behind the defence",
+      "No — you should be on the halfway line with your defenders",
+      "Yes — if a long shot comes, you'll be ready"
+    ],
+    correct: 1,
+    explanation: "When your defence pushes up, a huge gap opens between them and you. If you stay on your six-yard line, any ball over the top has 30+ yards of space to bounce into. Push up to the edge of your area (or just outside it) so you can sweep up through balls. This is one of the biggest things coaches look for at your level — are you reading the game and adjusting your position with the play?",
+    tip: "Think of yourself as connected to your defence by an invisible rope. When they push up, you push up. When they drop, you drop. The gap between you and your back line should stay roughly the same."
+  },
+  {
+    category: "Positioning",
+    scenario: "A shot is coming from about 18 yards out, slightly to the right of centre. You've shuffled across but you're not quite set when the striker shoots.",
+    question: "What's gone wrong?",
+    options: [
+      "Nothing — 18 yards is too far out to worry about",
+      "You should have dived earlier",
+      "You weren't adjusting your position early enough as the ball moved — you were caught mid-shuffle",
+      "You were too far off your line"
+    ],
+    correct: 2,
+    explanation: "The most common positioning mistake at youth level is reacting late. You should be shuffling and adjusting constantly as the ball moves around the pitch — not waiting until someone shapes to shoot and then scrambling across. If you're caught mid-shuffle when the shot comes, your weight is wrong and you can't push off to dive properly.",
+    tip: "Your feet should never stop. Small shuffles, always adjusting, always ready. Watch the ball, read the body shape of the player on it, and be set before the shot — not during it."
+  },
+
+  // ── DISTRIBUTION ──
+  {
+    category: "Distribution",
+    scenario: "You've made a save and caught the ball. It's late in the game and you're winning 1-0. The opposition are pressing you high and your centre-backs are being marked tightly. Your striker is making a run into the channel on the left.",
+    question: "What's your best option?",
+    options: [
+      "Roll it short to your nearest centre-back, even though she's marked",
+      "Boot it as far as you can down the middle",
+      "Hold onto it for as long as you can to waste time",
+      "Look to find your striker's run with a driven kick or long throw into the channel"
+    ],
+    correct: 3,
+    explanation: "Your striker's run is the best option — it can kill the game and it immediately relieves all the pressure on your defence. Playing short into a marked centre-back under a high press is asking for trouble. Booting it long with no target just gives possession back. Wasting time might get you a telling-off from the ref. Read the run early and hit it.",
+    tip: "Before you even make the save, you should already be scanning. Where is the space? Where are your teammates? The best keepers know their first pass before the ball reaches their hands."
+  },
+  {
+    category: "Distribution",
+    scenario: "It's pouring rain — a proper Scottish day. You've caught a cross and your gloves are soaking. The ball is slippy. No one is pressing you.",
+    question: "How do you distribute?",
+    options: [
+      "Kick it long — get rid of it before you drop it",
+      "Overarm throw to your winger 30 yards away",
+      "Roll it or underarm throw it short to your nearest free defender",
+      "Drop kick it high to clear your lines"
+    ],
+    correct: 2,
+    explanation: "Wet ball + wet gloves = keep it simple. A short roll or underarm throw to a free defender is the most accurate and safest option. You control the speed, you control the direction. Trying a long throw in the rain risks the ball slipping out your hand and going anywhere. Kicking it long when you don't need to just gives possession away.",
+    tip: "Rain changes everything. Shorter distribution, simpler decisions, tighter grip. It's not boring — it's smart. Mistakes from keepers in the rain usually come from trying to do too much."
+  },
+  {
+    category: "Distribution",
+    scenario: "Your defender plays the ball back to you. No pressure. You look up and see your left back free near the touchline, your centre-mid free about 25 yards away, and your right back is tightly marked.",
+    question: "Where do you play it?",
+    options: [
+      "Smash it long to your striker",
+      "Roll to the left back — she's closest and safest",
+      "Play it to the centre-mid — she's free and can turn and play forward",
+      "Wait for the right back to get free"
+    ],
+    correct: 2,
+    explanation: "The centre-mid is the best option here. She's free, she's 25 yards away (well within your range), and she's in a position to receive, turn, and move the ball forward. The left back is safe but doesn't progress the ball much. Hitting it long when you have good options wastes possession. Waiting for the right back wastes time.",
+    tip: "Don't just pick the easiest pass — pick the pass that helps your team the most. Your centre-mid receiving and turning is worth much more than a safe sideways ball to a full-back. Think: what's the next move after my pass?"
+  },
+  {
+    category: "Distribution",
+    scenario: "You've gathered the ball and your team can counter-attack. Your winger is free on the touchline about 30 yards away, sprinting into space. You need to get the ball to her fast.",
+    question: "What's the quickest, most accurate way?",
+    options: [
+      "Overarm javelin throw — flat, fast, accurate",
+      "Drop kick — high and long",
+      "Half-volley kick from your hands",
+      "Roll it out to a defender and let them pass it forward"
+    ],
+    correct: 0,
+    explanation: "The javelin throw is your best weapon for counter-attacks at this distance. It's flat (so it gets there quickly), it's accurate (you can aim it precisely), and it's fast to release (no run-up needed). A kick takes longer to set up and is harder to control. Rolling to a defender kills the counter-attack speed.",
+    tip: "Work on your javelin throw in every training session. At 14, you might not throw 40 yards yet — but 25-30 with accuracy is brilliant and will only get longer as you get stronger. It's the most underrated skill a young keeper can develop."
+  },
+
+  // ── SHOT STOPPING ──
+  {
+    category: "Shot Stopping",
+    scenario: "A striker about 16 yards out shapes to shoot low to your left. You're in your ready stance, weight forward, on the balls of your feet.",
+    question: "What's the right technique for the dive?",
+    options: [
+      "Push off your right foot, lead with your hands towards the ball, get your body behind it",
+      "Fall to the left and hope the ball hits you",
+      "Take a big step to the left first, then dive",
+      "Stay standing and stick your foot out"
+    ],
+    correct: 0,
+    explanation: "Push off the foot nearest the ball (right foot for a dive left), lead with your hands, and get your body down and behind the ball. Your bottom hand goes under and behind, your top hand goes on top to secure it. Falling passively or stepping first both waste time — at 16 yards, you don't have any to spare. And sticking a foot out is a last resort, not a technique.",
+    tip: "Low dives are all about getting down quickly. Don't try to be dramatic — fast, clean, hands first. The power comes from the push-off foot. Practise this in every session until it's automatic."
+  },
+  {
+    category: "Shot Stopping",
+    scenario: "The opposition have a free kick about 20 yards out, just left of centre. At your age group, most players aren't bending it like pros — it's more likely to come hard and straight, maybe with a bit of wobble.",
+    question: "How do you set up your wall and position yourself?",
+    options: [
+      "Big wall of 4-5 players to block everything, stand behind them",
+      "2-3 players covering the near post side, you stand slightly to the open side so you can see the ball and react",
+      "No wall — just have everyone mark a player",
+      "3 players in the wall, you stand on the far post"
+    ],
+    correct: 1,
+    explanation: "At youth level, free kicks from 20 yards tend to be hit hard and straight rather than curled with precision. You need to see the ball — so don't hide behind a massive wall. 2-3 players covering the near post is enough. Stand slightly to the open side of the wall so you have a clear sightline to the kicker and can react to whatever comes. If you can't see it, you can't save it.",
+    tip: "Organise fast: call the number, point the end player to the post, get yourself set. The quicker you're ready, the less chance they catch you off guard with a quick one. At your level, seeing the ball is more important than having a huge wall."
+  },
+  {
+    category: "Shot Stopping",
+    scenario: "A shot comes in from 12 yards. You dive and get a strong hand to it, but you can only parry it — you can't hold it.",
+    question: "Where do you try to parry the ball?",
+    options: [
+      "Anywhere — just get a hand on it",
+      "Parry it wide of the post and out for a corner — away from danger",
+      "Parry it back out in front of you",
+      "Parry it up in the air so you can catch the rebound"
+    ],
+    correct: 1,
+    explanation: "If you can't hold it, push it wide — behind for a corner is perfect. A corner is a much smaller threat than a rebound falling to an attacker 6 yards out. Parrying it back into the middle is the worst outcome. Parrying it up in the air leaves you scrambling. Strong wrists, push it wide and away.",
+    tip: "Practise your parrying direction. Open your wrist and angle your hand to guide the ball wide, not back into play. A good parry is nearly as valuable as a catch if it goes in the right direction."
+  },
+  {
+    category: "Shot Stopping",
+    scenario: "You're facing a penalty. You've not faced this penalty taker before and don't know which way she'll go.",
+    question: "What's your best approach?",
+    options: [
+      "Pick a side before she runs up and dive early to cover as much goal as possible",
+      "Stay on your feet as long as you can, stay central, react to the shot",
+      "Try to put her off by jumping around and waving your arms",
+      "Dive to your right — most right-footed players go to the keeper's right"
+    ],
+    correct: 1,
+    explanation: "At youth level, a lot of penalties are hit down the middle or without great placement. If you dive early, you commit to one side and anything central goes in. Staying up and central for as long as possible gives you a chance to react — and at this distance, you can reach most shots if you read them even slightly. Guessing is a coin flip. Reacting gives you a real chance.",
+    tip: "Penalties feel scary but the pressure is on the taker, not you. Nobody expects you to save it — so you've got nothing to lose. Stay big, stay central, watch the ball. Any save is a bonus."
+  },
+
+  // ── SET PIECES ──
+  {
+    category: "Set Pieces",
+    scenario: "The opposition have a corner from the left side. At your level, the delivery might not be perfectly consistent — it could be near post, far post, or short.",
+    question: "Where do you position yourself?",
+    options: [
+      "Central on your goal line so you can react to anything",
+      "A yard or two off your line, slightly towards the back post, in a position to come forward",
+      "On the near post ready to stop a flick",
+      "On the penalty spot to dominate the area"
+    ],
+    correct: 1,
+    explanation: "At your age, corner delivery varies a lot — you need to be in a position where you can deal with different types. A step or two off your line, slightly back-post side, gives you a base to attack any ball that comes into your six-yard box. You're close enough to the near post to react, but positioned to deal with the most common delivery (back post area). Being on your line makes you static. The penalty spot is too far out.",
+    tip: "Corners at youth level are a chance for keepers to dominate. A lot of deliveries will be within your range — be brave, call early, and attack the ball. Every cross you claim builds your confidence and your team's trust in you."
+  },
+  {
+    category: "Set Pieces",
+    scenario: "A corner comes in and it's heading right for you. There are bodies everywhere. You think you can get two hands on it, but it'll be tight — players are closing in.",
+    question: "What do you do?",
+    options: [
+      "Go for the catch — two hands, take the contact, claim it",
+      "Play it safe and punch it — too risky to catch with people around",
+      "Leave it for your defenders — too crowded",
+      "Try to tip it over the bar"
+    ],
+    correct: 0,
+    explanation: "If you can get two hands on the ball, catching it is always the best option — it completely kills the attack. Yes, there will be contact, but that's fine — brace yourself with a knee up to protect your body and take the hit. Punching should be your backup when you genuinely can't get two hands to it. Leaving it for defenders creates confusion. Tipping it over just gives another corner.",
+    tip: "Be brave. Catching in traffic is scary at first but it's a skill you develop with practice. Get your knee up to protect yourself, call loudly, and attack the ball at its highest point. Every catch you make in a crowd builds your reputation."
+  },
+  {
+    category: "Set Pieces",
+    scenario: "The opposition score a short corner routine — they play it short, your defender doesn't follow, and the attacker crosses from a different angle. You weren't expecting it.",
+    question: "What should you have done differently?",
+    options: [
+      "Nothing — that's the defender's fault for not following",
+      "Before the corner, you should have told your defenders about the short option and assigned someone to close it down",
+      "You should have rushed out to close down the short corner yourself",
+      "You should have stayed on your line and dealt with the cross when it came"
+    ],
+    correct: 1,
+    explanation: "You're the organiser. Before every set piece, you should be telling your defence the plan — including what to do if they go short. 'If they go short, number 7 goes out to press.' It's your job to think about these situations before they happen. Your defender didn't follow because nobody told them to.",
+    tip: "Before every corner, run through the checklist: who's on the posts? Who's marking who? What if they go short? You're the one facing the play — you can see everything. Own the organisation."
+  },
+  {
+    category: "Set Pieces",
+    scenario: "Your team has a free kick about 20 yards from the opposition's goal. Your coach has asked you to stay back.",
+    question: "What should you be doing?",
+    options: [
+      "Standing on the halfway line watching the action",
+      "Positioning yourself to sweep up any counter-attack — staying alert and connected to the play",
+      "Wandering up the pitch to support the attack",
+      "Sitting back in your goal — nothing to do until they get the ball"
+    ],
+    correct: 1,
+    explanation: "Even when the ball is at the other end, you're still playing. Position yourself high enough to sweep if the opposition break quickly on the counter. Stay alert, read the play, and be ready. The most dangerous counter-attacks happen from set pieces when teams push players forward. You're the last line — don't switch off.",
+    tip: "Keepers who switch off when their team is attacking get caught out. Stay connected to the game, read what could happen next, and be ready for the transition. The best keepers are alert for 90 minutes, not just when the ball is near them."
+  },
+
+  // ── SWEEPER-KEEPER ──
+  {
+    category: "Sweeper-Keeper",
+    scenario: "Your defence is playing a high line. A long ball is hoofed over the top and it's bouncing into the space behind your centre-back. Both she and the striker are chasing it. The ball is about 25 yards from goal.",
+    question: "What's your move?",
+    options: [
+      "Stay on your line — your centre-back should deal with it",
+      "Sprint out, call 'KEEPER!' loud and early, and get to the ball first",
+      "Come out a few yards and see what happens",
+      "Shout at your centre-back to get there"
+    ],
+    correct: 1,
+    explanation: "This is YOUR ball. You have the advantage — you can use your hands. Sprint out the moment you read the ball is going over the top, call 'KEEPER!' twice so your centre-back knows to leave it, and get there with authority. Hesitating or coming out halfway is the worst thing — you end up in no-man's-land. Commit fully or don't go at all.",
+    tip: "Reading the flight of the ball is the key skill here. As soon as you see the long ball go up and your defender is going to be in a race, make your decision instantly and GO. The earlier you start sprinting, the easier it is. Waiting makes everything harder."
+  },
+  {
+    category: "Sweeper-Keeper",
+    scenario: "You've come off your line to sweep up a through ball but you and the attacker arrive at the same time, 20 yards from goal. You can't cleanly pick it up — she's too close.",
+    question: "What do you do?",
+    options: [
+      "Grab the ball and accept the foul — better than conceding",
+      "Try to kick the ball away safely — play the ball, not the player",
+      "Turn around and sprint back to your goal",
+      "Stand still and let the attacker run into you"
+    ],
+    correct: 1,
+    explanation: "Play the ball, not the player. If you can slide in and knock the ball away cleanly — sideways to a teammate or out wide — that's the right play. It keeps you in the game and avoids giving away a foul. Fouling outside the box is a free kick in a dangerous position; fouling inside the box is a penalty and possibly a red card. Retreating leaves your goal wide open. Always go for the ball first.",
+    tip: "Sliding at a player's feet is nerve-wracking, but if your focus is on the ball, your timing will be better. Don't think about the player — think about where you're sending the ball. Practise this in training with a coach rolling balls through."
+  },
+  {
+    category: "Sweeper-Keeper",
+    scenario: "Your team plays a high line. You've been told to sweep behind the defence. But you're not totally confident coming off your line yet — you misjudged a through ball last game.",
+    question: "What's the right mindset?",
+    options: [
+      "Stop sweeping — it's too risky until you're older and more experienced",
+      "Keep sweeping but be more cautious — only commit when you're certain you'll get there first",
+      "Ignore the coach and stay on your line — you know your own ability",
+      "Tell your defenders to drop deeper so you don't have to sweep"
+    ],
+    correct: 1,
+    explanation: "One mistake doesn't mean you stop doing it — it means you learn from it. Keep sweeping, but calibrate: only commit when you're sure you'll get to the ball first. If it's 50/50 or worse, hold your ground and deal with the 1v1 instead. Your judgement will improve the more you do it. The worst thing is to stop trying.",
+    tip: "Every top keeper in the world has misjudged a sweep. The difference is they learned from it and kept going. After a mistake, ask yourself: did I go too late? Did I misjudge the flight? Adjust one thing, then back yourself next time."
+  },
+
+  // ── COMMUNICATION ──
+  {
+    category: "Communication",
+    scenario: "A high cross is coming in from the right wing. Your centre-back and right-back are both underneath it. You think you might be able to reach it, but you're not 100% sure.",
+    question: "What do you do?",
+    options: [
+      "Stay quiet and see what happens — you don't want to call and then not get there",
+      "Call 'KEEPER!' if you're going, or 'AWAY!' if you want your defenders to clear it — and make the call early",
+      "Wait until the last second to decide, then call",
+      "Come for every cross regardless and call every time"
+    ],
+    correct: 1,
+    explanation: "Make the decision and communicate it immediately. If you're going: 'KEEPER!' twice, loud enough for everyone to hear. If you're not going: 'AWAY!' so your defenders know they need to deal with it. The worst thing that can happen is silence — your centre-back thinks you're coming, your right-back thinks the centre-back has it, and nobody deals with it. Even a wrong call is better than no call.",
+    tip: "This is one of the hardest things about being a keeper — your voice has to be bigger than your doubt. If you say 'KEEPER!', your defenders will get out of the way and trust you. If you're quiet, chaos happens. Be loud. Be early. Be decisive."
+  },
+  {
+    category: "Communication",
+    scenario: "Your team has just lost a goal because your centre-back made a mistake — she tried to play out from the back and got tackled. You're frustrated and she looks upset.",
+    question: "How do you react in the next 30 seconds?",
+    options: [
+      "Let her know what she did wrong so she doesn't do it again",
+      "Say nothing — she knows what happened",
+      "Go to her quickly, clap your hands, say 'That's gone — next ball, we go again' and reorganise the shape",
+      "Wait until half time and talk about it then"
+    ],
+    correct: 2,
+    explanation: "Your centre-back already knows she made a mistake — she doesn't need you to tell her. What she needs is to hear your voice picking her up so she doesn't make another one. If you shout at her, her confidence drops and the next 10 minutes get worse. If you say nothing, she stews on it. A quick reset — positive, forward-looking, then back to organising — is what the best keepers do.",
+    tip: "Keepers who shout at teammates after mistakes make the team worse, not better. Your job is to be the calm one. Reset, reorganise, encourage. You can talk about what went wrong after the game — during the game, be the person everyone trusts to hold it together."
+  },
+  {
+    category: "Communication",
+    scenario: "Your centre-back receives a pass from the right-back. She's facing away from goal and hasn't seen the striker pressing her from behind.",
+    question: "What do you shout?",
+    options: [
+      "Nothing — she should know the striker is there",
+      "'MAN ON!' — loud and clear, then point to where the free option is",
+      "'AWAY!' — just get rid of it",
+      "'TURN!' — encourage her to take the striker on"
+    ],
+    correct: 1,
+    explanation: "'Man on!' tells her there's pressure — don't turn, it's not safe. Then help her by pointing to the free player so she knows where to pass. Saying 'Away!' just tells her to boot it and that's not always necessary. Saying 'Turn!' when there's a striker behind her could lead to her losing the ball in a dangerous area. Your job is to give her the information she can't see.",
+    tip: "You're the only player who can see the whole pitch. Your defenders are facing the ball — they can't see what's behind them. Use simple, clear words: 'Man on!', 'Time!' (means no pressure, you can turn), 'Left shoulder!', 'Play it back!'. Be their eyes."
+  },
+  {
+    category: "Communication",
+    scenario: "It's a goal kick. Your coach wants you to play short but the opposition are pressing high and closing down your defenders. Your teammates look unsure where to go.",
+    question: "What do you do?",
+    options: [
+      "Just kick it long — it's safer than risking it short under pressure",
+      "Tell your defenders where to stand, create a passing option, and direct the shape before you take the kick",
+      "Roll it to the nearest defender and hope for the best",
+      "Wait for your coach to shout instructions"
+    ],
+    correct: 1,
+    explanation: "Before you take the goal kick, organise. Tell your centre-backs to split wide, point your full-backs higher, wave your midfielder into space. Create the passing options BEFORE you play the ball. If your teammates look unsure, it's because nobody is telling them where to go — and that's your job. If after organising, there's genuinely no safe option, then yes, go long. But organise first.",
+    tip: "Goal kicks are set pieces — you have time. Use it. Don't just whack it because the pressure looks scary. Get your players into position, pick your pass, then execute. The best keepers control these moments."
+  },
+
+  // ── DECISION MAKING ──
+  {
+    category: "Decision Making",
+    scenario: "It's the last few minutes and your team is 1-0 up. The opposition win a corner. The cross comes in and you can get two hands on it.",
+    question: "Do you catch or punch?",
+    options: [
+      "Catch it — holding the ball kills the attack completely",
+      "Punch it — in the last few minutes, just get it away as far as possible",
+      "Leave it for your defenders — it's their job",
+      "Tip it over the bar"
+    ],
+    correct: 0,
+    explanation: "If you can get two hands on it, catch it. Always. Catching the ball ends the attack — there's no second ball, no scramble, no chance for them. Punching keeps the ball alive and at this stage of the game, with bodies in the box, a punch that doesn't travel far enough is dangerous. Trust your hands.",
+    tip: "Late in games when you're winning, your brain tells you to panic and just get rid of it. Train yourself to stay calm. Catching is safer than punching if you can get two hands on it. Full stop."
+  },
+  {
+    category: "Decision Making",
+    scenario: "You rush off your line to get a through ball but it bobbles and you can't gather it cleanly. The striker is right there. The ball is loose at your feet.",
+    question: "What do you do?",
+    options: [
+      "Try to scoop it up — you might just hold onto it",
+      "Kick it anywhere — just get it away from your goal, ideally wide towards the touchline",
+      "Dive on it and curl up around it",
+      "Leave it and scramble back to your goal"
+    ],
+    correct: 1,
+    explanation: "If it's loose at your feet and you can't gather it, kick it to safety — wide is best, towards the touchline. Don't try to pick up a ball you've already fumbled with a striker right there. Don't abandon it either — that leaves an open goal. A clearance to the side is ugly but effective. Ugly and effective beats pretty and disastrous.",
+    tip: "When things go wrong — and they will — stay composed. Don't freeze, don't panic. Your feet are a tool. If your hands can't solve the problem, your feet can. Clear it wide, deal with the consequences after."
+  },
+  {
+    category: "Decision Making",
+    scenario: "Your coach has been working on playing out from the back. You have the ball at your feet in the box and your centre-back is free 10 yards away. But the opposition striker is pressing and closing your centre-back down quickly.",
+    question: "What do you do?",
+    options: [
+      "Play it to the centre-back anyway — the coach said play out from the back",
+      "Look for another option — is anyone else free? If not, go long. Don't force a pass into pressure",
+      "Just hoof it every time to be safe",
+      "Dribble past the striker yourself"
+    ],
+    correct: 1,
+    explanation: "Playing out from the back doesn't mean you always play short. It means you try to build from the back when it's on. If the striker is closing your centre-back down, that pass is risky — you could play your teammate into trouble. Look around: is the other centre-back free? A full-back? Your midfielder? If nobody is open, going long is the right decision. Your coach wants you to make smart choices, not just blindly play short.",
+    tip: "The best keepers know when to play short AND when to go long. Playing out from the back is about reading the press and picking the right option — sometimes that option is long. Don't be afraid to change the plan."
+  },
+  {
+    category: "Decision Making",
+    scenario: "An attacker is coming at you from a tight angle near the byline on the right. She could shoot near post or cut the ball back to a teammate arriving in the middle of the box.",
+    question: "What's your priority?",
+    options: [
+      "Rush out and slide at her to block everything",
+      "Cover your near post and stay on your feet — force her into the difficult shot and trust your defenders to cover the cutback",
+      "Move to the middle of the goal to cover the cutback",
+      "Just stand still and react"
+    ],
+    correct: 1,
+    explanation: "From a tight angle, the near post shot is the biggest danger — if that goes in, it's a bad goal. Cover the near post by closing the angle, stay on your feet, and make yourself big. If she cuts it back, your defenders should be tracking the runner. If you rush out and go to ground, she just rolls it across for an easy tap-in. Stay up, stay patient, make her shoot from a bad angle.",
+    tip: "Going to ground is the most common mistake young keepers make in 1v1 situations. Stay on your feet as long as possible. The longer you stand, the more of the goal you cover and the harder you are to beat. Only go down when the ball is struck."
+  },
+  {
+    category: "Decision Making",
+    scenario: "You've got the ball in your hands. The ref hasn't blown for anything. You're looking to distribute but you've been holding it for about 5 seconds already. You can't find anyone free.",
+    question: "What do you do?",
+    options: [
+      "Keep holding it — wait for someone to get free, you've got ages",
+      "Bounce the ball and pick it up again to buy time",
+      "Put the ball down at your feet and look for a pass, or kick it long if nothing is on",
+      "Just kick it as far as you can"
+    ],
+    correct: 2,
+    explanation: "You have 6 seconds to release the ball from your hands — refs at your level will penalise you for holding on too long. If you can't find a throw or a pass from your hands, put it down at your feet. Now you've got more time and more options — you can pass to a short option or kick it long. Don't bounce it and pick it up again — that's not allowed. Don't just hoof it blindly either.",
+    tip: "Know the 6-second rule. If you can't find your option quickly, go to feet. It resets your time and gives you more options. Practise receiving and passing with your feet so you're comfortable when this happens in a game."
+  },
+  {
+    category: "Decision Making",
+    scenario: "A backpass comes to you from your defender but it's underhit and rolling slowly. An attacker is chasing it and will get there in about 2 seconds.",
+    question: "What do you do?",
+    options: [
+      "Wait for it to reach you, then pick it up",
+      "Sprint out to the ball and kick it clear with your first touch — don't let the attacker get there",
+      "Wait on your line and hope the attacker gets there first so you can claim it as a tackle",
+      "Run out slowly and try to dribble around the attacker"
+    ],
+    correct: 1,
+    explanation: "Sprint to the ball immediately. You can't pick it up (it's a backpass), so your first touch has to be a clearance — kick it long, kick it wide, just get it away. Speed is everything here: if the attacker gets there first, it's a 1v1 with you scrambling. Every fraction of a second counts. Attack the ball, clear it, deal with what happens next.",
+    tip: "Underhit backpasses are one of the most dangerous situations a keeper faces. Your reaction has to be instant — don't think, just go. Practise clearing under pressure with both feet. And remember: you CANNOT pick up a deliberate backpass."
+  },
+
+  // ═══════════════════════════════════════════
+  // SECOND SET — ADDITIONAL QUESTIONS
+  // ═══════════════════════════════════════════
+
+  // ── POSITIONING (additional) ──
+  {
+    category: "Positioning",
+    scenario: "A cross is coming in from the left wing. It's a deep cross, heading towards the back post area. You started near the middle of your goal.",
+    question: "How do you adjust?",
+    options: [
+      "Stay where you are — it's heading away from you so your defenders will deal with it",
+      "Shuffle across towards the back post quickly, keeping your body open to the ball so you can still come for it",
+      "Run to the back post as fast as you can",
+      "Move forward to the edge of the six-yard box to cut it off"
+    ],
+    correct: 1,
+    explanation: "A deep cross to the back post means you need to shift across, but in a controlled way — shuffle steps, body open to the ball, eyes on the flight. If you just sprint to the post you'll arrive with your body facing the wrong way. If you stay central, a headed ball or flick back across goal leaves you stranded. Controlled, quick shuffles keep you balanced and ready.",
+    tip: "When adjusting for crosses, never turn your back to the ball. Shuffle sideways so you can change direction at any point. Arriving at the right spot with your body in the wrong position is just as bad as not getting there."
+  },
+  {
+    category: "Positioning",
+    scenario: "Your team is defending and the opposition are passing the ball across the edge of your box — left to right, then back again. You're finding yourself always a step behind.",
+    question: "What are you doing wrong?",
+    options: [
+      "You're watching the ball instead of moving with it — you need to shuffle as the ball travels, not after it arrives",
+      "You're too far off your line",
+      "You should be standing still and reacting when the shot comes",
+      "You're too close to the near post"
+    ],
+    correct: 0,
+    explanation: "The ball moves faster than you do. If you wait until the ball arrives at a player before adjusting your position, you'll always be late. You need to move AS the ball moves — shuffling across while it's in transit so you're already set when the next player receives it. It's like a metronome: ball moves, you move, ball stops, you're set.",
+    tip: "In training, practise side-to-side shuffling while a coach passes the ball across the box. Your feet should be moving the entire time the ball is in motion. As soon as it's controlled, you should already be in position."
+  },
+  {
+    category: "Positioning",
+    scenario: "An attacker receives the ball about 22 yards out, right in the centre of the pitch. She has time to look up.",
+    question: "How far off your line should you be?",
+    options: [
+      "On your goal line — it's 22 yards, you need to be back to cover the full goal",
+      "A couple of yards off your line — close enough to narrow the angle but far enough to react to a shot over your head",
+      "On your six-yard line — as far out as possible to close the angle right down",
+      "On the edge of your box to press the attacker"
+    ],
+    correct: 1,
+    explanation: "At 22 yards, a couple of yards off your line is the sweet spot. It narrows the angle slightly — giving the shooter less goal to aim at — but you're not so far out that a chip or a dipping shot goes over your head. At your age, you're still growing, so being too far out leaves you vulnerable to lobs. Find the balance: close enough to be imposing, far enough to cover your goal.",
+    tip: "Your ideal starting position depends on the distance AND the angle of the attacker. Central and far out = a few yards off your line. Wide and close = more aggressive. Practise finding the right depth for different shooting positions."
+  },
+  {
+    category: "Positioning",
+    scenario: "You're playing on a grass pitch that's heavy and muddy after days of rain. The ball is bouncing unpredictably.",
+    question: "How does this affect your positioning?",
+    options: [
+      "It doesn't — positioning is the same regardless of conditions",
+      "Stay a bit deeper and a bit more central — the ball will hold up and bobble, so give yourself extra reaction time",
+      "Come way off your line because shots won't have as much power on a heavy pitch",
+      "Stay right on your line for everything"
+    ],
+    correct: 1,
+    explanation: "On a heavy, muddy pitch, shots can bobble unpredictably in front of you — a ball that looks like it's going chest-height can suddenly skid along the ground or bounce up. Sitting a bit deeper gives you an extra fraction of a second to read the bounce. You also want to be slightly more central because the pitch will slow and redirect the ball in unexpected ways. Don't overcompensate — just a small adjustment.",
+    tip: "Conditions should always affect your positioning. Wet and muddy = sit a touch deeper, expect the unexpected bounce. Dry and fast = you can be more aggressive coming off your line. Windy = adjust for the direction the wind will push the ball."
+  },
+  {
+    category: "Positioning",
+    scenario: "Your team is defending a 2v1 counter-attack. Two attackers are bearing down on your one remaining defender. The ball carrier is central, the other attacker is wide right.",
+    question: "What's your positioning?",
+    options: [
+      "Come out to the edge of your box and try to close down the ball carrier",
+      "Stay on your line, central, and react to whatever happens",
+      "Position yourself slightly towards the ball carrier (central) but hold your ground — don't commit until she decides to shoot or pass",
+      "Move towards the wide attacker to block the pass"
+    ],
+    correct: 2,
+    explanation: "In a 2v1, your job is to delay and make the attacker choose. If you rush out, she passes to her teammate for an open goal. If you stay on your line, the angle is too open. Position yourself slightly towards the ball carrier to narrow her angle, but stay patient. Let your defender cover the pass. Force the attacker into a decision while you're still on your feet and balanced.",
+    tip: "2v1s are the hardest situation for a keeper. The key is patience — don't commit early. Make yourself big, slow the play down, and force the attacker to make the first move. If you guess wrong, it's a goal. If you stay patient, they often panic."
+  },
+
+  // ── DISTRIBUTION (additional) ──
+  {
+    category: "Distribution",
+    scenario: "You've claimed a cross and there's a chance to counter-attack. Your midfielder is free in the centre, about 20 yards away. But an attacker is between you and her, blocking the throwing lane.",
+    question: "What do you do?",
+    options: [
+      "Throw it anyway and hope it gets past the attacker",
+      "Move a few steps to the side to change the angle, then throw once the lane is clear",
+      "Kick it long over everyone's head",
+      "Hold the ball until the attacker moves away"
+    ],
+    correct: 1,
+    explanation: "If the lane is blocked, don't force it — a misplaced throw from inside your box is a gift. Take a couple of quick steps to your left or right to change the angle and create a clear passing line. This takes one second and massively reduces the risk. Going long wastes the counter-attack opportunity. Holding and waiting lets the opposition get back into shape.",
+    tip: "You're allowed to move with the ball in your hands. Use your feet to create better throwing angles — two or three steps sideways can open up a completely different option. Smart keepers do this all the time."
+  },
+  {
+    category: "Distribution",
+    scenario: "You've got the ball after a goal kick. Your coach wants you to play short. The wind is blowing a gale straight into your face.",
+    question: "How does this change your approach?",
+    options: [
+      "Play short anyway — the wind won't affect a short pass",
+      "Kick it long — the wind will hold it up and make it easier for your striker to compete",
+      "Keep it on the ground — short passes along the deck aren't affected by wind, but play it a bit firmer than usual",
+      "Ask the ref to wait until the wind dies down"
+    ],
+    correct: 2,
+    explanation: "Wind into your face kills anything in the air — goal kicks won't travel, high throws get pushed back. Keep the ball on the ground where the wind can't affect it. Play it slightly firmer than normal because the pitch might be wet and the ball heavy. Short, firm, along the ground — let your teammates do the work of progressing it forward.",
+    tip: "In windy conditions, the keeper who keeps the ball on the deck wins. In the second half when the wind is behind you, that's when you can use long distribution. Read the conditions and adapt — it's one of the smartest things a keeper can do."
+  },
+  {
+    category: "Distribution",
+    scenario: "You collect a routine backpass. You look up and every single one of your teammates is marked. Nobody is offering a free passing angle.",
+    question: "What's the right play?",
+    options: [
+      "Panic and boot it long",
+      "Hold the ball at your feet and demand your teammates move — shout for someone to show for the ball",
+      "Dribble upfield with it until someone gets free",
+      "Kick it into touch and let your team reset from the throw-in"
+    ],
+    correct: 1,
+    explanation: "It's a backpass so it's at your feet — you have time. Don't panic. Shout at your centre-backs to split wider. Tell your full-backs to drop deeper. Point to your midfielder and tell her to check towards you. Make your teammates create the option. If after all that nobody is free, then go long — but organise first. Booting it first time wastes an opportunity.",
+    tip: "When nothing is on, it's not a problem — it's an opportunity to organise. Use your voice: 'Split! Show! Drop!' Your teammates need to hear you. If you just panic-kick every time nobody is free, you'll never improve your team's build-up."
+  },
+  {
+    category: "Distribution",
+    scenario: "Your team has been given a goal kick. The opposition are pressing high — their strikers are standing on the edge of your box. Your coach has told you to play short when possible.",
+    question: "What's your plan?",
+    options: [
+      "Always play short no matter what — coach's orders",
+      "Read the press: if they leave a gap between the strikers, play through it. If they close every option down, go long. Have both plans ready",
+      "Always go long when they press high — it's too dangerous to play short",
+      "Wait until the ref tells you to hurry up, then decide"
+    ],
+    correct: 1,
+    explanation: "A high press is designed to force you into mistakes. The smart play is to read it: sometimes there's a gap between the pressing players that your centre-back can receive in. Sometimes it's completely shut. Have both plans — short and long — ready before you take the kick. If short is on, play short. If it's not, go long with purpose, aiming for your striker or a channel. Never blindly follow one plan.",
+    tip: "Before every goal kick, look at where the press is. Talk to your centre-backs: 'If they press, we go long. If they sit off, we play through.' Having a plan A and a plan B means you never get caught out."
+  },
+  {
+    category: "Distribution",
+    scenario: "You've made a save diving to your right and held onto the ball. You're on the ground. The opposition are retreating but your winger is free for a quick counter.",
+    question: "What's the fastest way to start the counter?",
+    options: [
+      "Get up, set yourself, and throw — proper technique matters",
+      "Roll the ball out quickly to your nearest full-back while you're still getting up",
+      "Lie there and wait for the opposition to get back before distributing",
+      "Get up and kick it long down the middle"
+    ],
+    correct: 1,
+    explanation: "Speed is everything on a counter. Rolling the ball out to your full-back while you're still getting to your feet is perfectly fine — it's quick, accurate, and gets the ball moving forward before the opposition can recover. You don't need to be standing perfectly to make a short pass. The full-back can then drive the ball to your free winger. Waiting to get up and set yourself for the perfect throw lets the counter die.",
+    tip: "Counter-attacks start with you. The fastest keepers release the ball within 2-3 seconds of making the save. Practise distributing from different positions — sitting, kneeling, one knee up. You won't always be standing when the opportunity comes."
+  },
+
+  // ── SHOT STOPPING (additional) ──
+  {
+    category: "Shot Stopping",
+    scenario: "A shot is hit straight at you from 15 yards. It's about chest height and coming fast.",
+    question: "What's the right technique?",
+    options: [
+      "Catch it with your hands only — keep your body out of the way",
+      "Get your body behind the ball, hands in a W-shape, and absorb the shot into your chest and arms",
+      "Dive out of the way and parry it wide",
+      "Stick a foot up and deflect it"
+    ],
+    correct: 1,
+    explanation: "For a shot straight at you, get your body behind the line of the ball as a second barrier. Hands in a W-shape (fingers spread, thumbs close together behind the ball), catch it, and cushion it into your chest. If it slips through your hands, your body stops it. Never rely on hands alone for a powerful shot at chest height — your body is your safety net.",
+    tip: "Shots straight at you should be the easiest saves — but they're where a lot of keepers drop the ball because they get complacent. Body behind, hands in front, squeeze it tight. Make the easy saves look easy by doing the technique right every time."
+  },
+  {
+    category: "Shot Stopping",
+    scenario: "A cross comes in low and hard across the 6-yard box. It's bouncing towards you at pace, about shin height.",
+    question: "What's the best way to collect it?",
+    options: [
+      "Bend down and scoop it up with your hands underneath",
+      "Get down on one knee, hands behind the ball, body behind the line — create a long barrier",
+      "Kick it away with your feet",
+      "Bend at the waist and try to grab it"
+    ],
+    correct: 1,
+    explanation: "For a low, fast ball, the long barrier technique is your friend: drop onto one knee (the knee goes behind the heel of the other foot to seal the gap), get your hands behind and under the ball, and use your body as a wall. This stops any ball that gets through your hands. Bending at the waist with your legs straight is unstable and leaves a gap under your body. Scooping can work but a bobble defeats it.",
+    tip: "The long barrier doesn't look glamorous, but it's rock-solid. Your body seals the gap, your hands gather the ball. Practise this until it's second nature — it'll save you goals from low shots and low crosses that skip off the surface."
+  },
+  {
+    category: "Shot Stopping",
+    scenario: "An attacker volleys the ball from about 14 yards. You see it late because a defender was blocking your view. It's heading bottom right.",
+    question: "Your view was blocked — what should you have done to give yourself the best chance?",
+    options: [
+      "Nothing — sometimes you just can't see the ball, that's football",
+      "Moved your position before the shot so you had a clear sightline around or to the side of the defender",
+      "Shouted at your defender to get out of the way",
+      "Anticipated the shot direction and dived early"
+    ],
+    correct: 1,
+    explanation: "If a defender is between you and the ball, you're blind — and a blind keeper can't make saves. Before the shot is struck, you should be moving your feet to find a sightline. A small sidestep can be enough. You need to see the ball leave the striker's foot to have any chance of reacting. Shouting at your defender to move is too slow. Diving early is guessing.",
+    tip: "Sightline is everything. If you can't see the ball, you can't save it. Before every shot, check: can I see the ball? If not, move your feet. This is a small thing that makes a huge difference — the best keepers never get 'unsighted' because they're always adjusting."
+  },
+  {
+    category: "Shot Stopping",
+    scenario: "A shot is heading for the top corner to your left. You're set and ready. It's a good strike — you'll need to get off the ground to reach it.",
+    question: "What's the key to making this save?",
+    options: [
+      "Jump as high as you can straight up, then reach across",
+      "Push off your left foot explosively to your left, extend your top hand to the ball",
+      "Push off your right foot to power yourself to the left, extend both arms, lead with your top hand",
+      "Throw yourself sideways and hope for the best"
+    ],
+    correct: 2,
+    explanation: "For a high dive to the left, you push off your RIGHT foot — the foot furthest from the direction you're going. This gives you power and height. Pushing off the left foot (the one nearest the ball) collapses your body and gives you no drive. Extend both arms, lead with your top hand, and try to get fingertips to the ball to push it over or wide. 'Hope for the best' isn't a technique.",
+    tip: "High dives come from the push-off. The power is in the opposite foot. Practise your footwork: right foot push for left dives, left foot push for right dives. It feels wrong at first but it generates much more power and height."
+  },
+  {
+    category: "Shot Stopping",
+    scenario: "Two shots come in quick succession — the first is saved but parried back out, and an attacker shoots again immediately from 8 yards.",
+    question: "What's the key to making the second save?",
+    options: [
+      "Stay on the ground from the first save and try to block the second shot with your body",
+      "Get up as quickly as possible, reset your feet, and get into a set position before the second shot",
+      "Dive in the same direction again",
+      "Hope your defender blocks it"
+    ],
+    correct: 1,
+    explanation: "Recovery speed is what separates great young keepers from good ones. After a save, your priority is to get back on your feet and get set. Even a split second of being in your ready stance — feet set, weight forward, hands ready — gives you a chance at the second ball. Staying on the ground means you can only block with your body if the shot happens to hit you. Reset, reset, reset.",
+    tip: "Practise your recovery in every training session. After every dive, spring up immediately and get set. Make it a habit. In games, rebounds and second shots happen all the time — the keeper who recovers fastest makes the save."
+  },
+
+  // ── SET PIECES (additional) ──
+  {
+    category: "Set Pieces",
+    scenario: "The opposition have an indirect free kick inside your box (the ref called a pass-back on your defender). The ball is 10 yards from goal.",
+    question: "What do you do?",
+    options: [
+      "Stand on your line normally — it's just a free kick",
+      "Line up your entire team on the goal line to block the shot, and stand behind them ready to react to anything that gets through",
+      "Stand on your line and put a wall of 2-3 players in front of the ball",
+      "Rush the kicker as soon as the whistle blows"
+    ],
+    correct: 1,
+    explanation: "An indirect free kick from 10 yards is incredibly dangerous. The best defence is to fill the goal — line up as many players as possible on the goal line, shoulder to shoulder. Since it's indirect, the ball has to be touched twice, so you have a fraction more time. Stand behind your wall of teammates, ready to react to whatever comes through the gap. This gives the shooter almost nothing to aim at.",
+    tip: "Indirect free kicks inside the box are rare but terrifying. Know the drill: everyone on the line, pack the goal, stay alert for the second touch. Practise this in training so everyone knows where to stand. Organisation wins these situations."
+  },
+  {
+    category: "Set Pieces",
+    scenario: "Your team has a corner at the other end. Your coach tells you to stay back. As the corner is taken, you notice the opposition striker staying upfield, lurking near the halfway line.",
+    question: "What do you do?",
+    options: [
+      "Ignore her — she's offside if they play it forward anyway",
+      "Position yourself near the edge of your box and keep one eye on the striker — if they clear it, you need to sweep",
+      "Run back to your goal line just in case",
+      "Shout to your coach about it"
+    ],
+    correct: 1,
+    explanation: "She's NOT offside — you can't be offside from a clearance (only from a deliberate pass by a teammate). If the opposition clear the corner and launch it forward, that striker is through on goal and you're the only one who can stop her. Position yourself high, ready to sweep, and keep watching her. If the ball comes long, you're first to it. This awareness can save your team a goal.",
+    tip: "This catches so many young teams out. The striker stays high, the corner gets cleared, and suddenly it's a 1v1 from the halfway line with the keeper on her six-yard box. Stay alert. Stay high. Be the sweeper even when your team is attacking."
+  },
+  {
+    category: "Set Pieces",
+    scenario: "The opposition have a throw-in deep in your half, near the corner flag. The thrower is looking to launch a long throw into your box — basically a set piece.",
+    question: "How do you treat this?",
+    options: [
+      "It's just a throw-in — stay on your line and react",
+      "Treat it exactly like a corner: organise your markers, check your position, communicate",
+      "Come to the edge of your 6-yard box and punch everything",
+      "Tell your defenders to back off and give you space to deal with it"
+    ],
+    correct: 1,
+    explanation: "A long throw into the box is functionally the same as a corner — it's a set piece delivery into a dangerous area. Organise your team: who is marking who? Who's on the near post? Who's on the back post? Set yourself in the right position (just like a corner) and be ready to claim or punch. Teams that treat long throws casually concede from them.",
+    tip: "Any delivery into your box is a set piece, whether it's a corner, free kick, or throw-in. Use the same routine every time: organise, communicate, set yourself, then deal with the ball. Consistency in your routine means you're never caught off guard."
+  },
+  {
+    category: "Set Pieces",
+    scenario: "Your team wins a free kick about 30 yards from the opposition's goal. Your defenders push up for it. Where are you?",
+    question: "What's your positioning?",
+    options: [
+      "In your goal — the ball is miles away",
+      "On the halfway line — you're the sweeper behind your high defensive line",
+      "On the edge of the opposition's box — join the attack",
+      "Standing with your centre-backs"
+    ],
+    correct: 1,
+    explanation: "Your defenders have pushed up for the free kick, which means there's huge space behind them. If you're in your goal, a clearance and quick counter-attack means the striker has 50 yards of space to run into. Push up to the halfway line to act as the sweeper — you can intercept any ball played over the top and still get back if needed. This is part of being a modern keeper.",
+    tip: "Every time the ball goes forward, ask yourself: where is my defensive line? Am I connected to it? Your starting position changes constantly throughout the game. A keeper standing in her goal while the team is on the halfway line isn't playing as part of the team."
+  },
+
+  // ── SWEEPER-KEEPER (additional) ──
+  {
+    category: "Sweeper-Keeper",
+    scenario: "A ball is played over the top. You start sprinting out to sweep it. Halfway there, you realise the ball is bouncing higher than you expected and the striker might get there first.",
+    question: "What do you do?",
+    options: [
+      "Keep going — you've committed, you can't stop now",
+      "Stop, reassess, and get into a 1v1 position — set your feet and make yourself big",
+      "Turn and sprint back to your goal",
+      "Slide in and try to win it regardless"
+    ],
+    correct: 1,
+    explanation: "It's okay to change your mind — in fact, it's smart. If you realise you're not getting there first, the worst thing you can do is keep sprinting out and get beaten. Stop, plant your feet, and set yourself for the 1v1. Now you're in a strong position — balanced, big, ready to react. Turning and running back exposes the whole goal. Sliding in when you're second-favourite is reckless.",
+    tip: "Good decision-making means being able to adjust mid-action. Starting to come out and then realising it's not on is NOT a mistake — continuing when you know it's wrong IS. The quicker you recognise and reset, the better your chances."
+  },
+  {
+    category: "Sweeper-Keeper",
+    scenario: "You've swept up a through ball outside your box, but the nearest teammate is 15 yards away and an attacker is closing you down. You can't pick the ball up because you're outside the area.",
+    question: "What do you do with the ball at your feet?",
+    options: [
+      "Try to dribble back into your box so you can pick it up",
+      "Play a firm pass to your nearest teammate — even if it's not perfect, get it to a teammate",
+      "Kick it as far away as possible",
+      "Shield the ball and wait for help"
+    ],
+    correct: 1,
+    explanation: "You've dealt with the danger by getting to the ball first — now keep it. A firm, simple pass to your teammate keeps possession and completes the job. Dribbling back into your box under pressure is asking for trouble. Hoofing it randomly gives the ball away. Shielding with an attacker closing you down is risky. Simple pass, job done.",
+    tip: "When you sweep outside your box, your feet become your tools. You need to be comfortable passing under pressure. Practise your outfield passing — both feet, firm and accurate, under pressure from a coach or teammate closing you down."
+  },
+  {
+    category: "Sweeper-Keeper",
+    scenario: "Your team is playing a high line. In the first half, you swept up three through balls perfectly. Now, in the second half, the opposition start playing the ball in behind more often, testing you repeatedly.",
+    question: "What does this mean for your positioning and decision-making?",
+    options: [
+      "Drop deeper — they've figured out the high line, stop sweeping",
+      "Keep your high position — they'll keep trying and you'll keep winning",
+      "Stay alert and keep reading each ball individually — but communicate with your defenders to adjust the line if needed",
+      "Ask your coach to change the formation"
+    ],
+    correct: 2,
+    explanation: "The opposition are targeting the space behind your line — that's a compliment to your sweeping, but it also means you need to stay sharp. Each ball needs to be judged on its own. If they keep going long, talk to your centre-backs: maybe drop the line 5 yards to reduce the space, while you maintain your sweeping position. It's a team adjustment, not just yours. Don't stop sweeping — but be smart about the conditions changing.",
+    tip: "Football is a chess match. When the opposition change their tactics, you adapt yours. The conversation between you and your defence should be constant: 'They're going long — drop five yards, I'll stay high.' That's game intelligence."
+  },
+
+  // ── COMMUNICATION (additional) ──
+  {
+    category: "Communication",
+    scenario: "The opposition's number 9 keeps drifting into the channel between your centre-back and right-back. Neither defender seems to have noticed.",
+    question: "What do you do?",
+    options: [
+      "Stay quiet — marking is the defenders' job",
+      "Shout early: 'Watch 9 in the channel!' and point so both defenders know",
+      "Wait until the ball is played to her and then call it",
+      "Leave your line and try to cover the space yourself"
+    ],
+    correct: 1,
+    explanation: "You can see things your defenders can't. If number 9 keeps finding space between your centre-back and right-back, tell them NOW — before the ball gets played. 'Number 9, channel right — squeeze!' gives them the information to close the gap. Waiting until the pass is played means you're reacting to the problem instead of preventing it. This kind of proactive communication is what top coaches look for.",
+    tip: "The best communication happens before the danger, not during it. Scan the pitch constantly: where are the opposition's dangeous players? Where are the gaps? Tell your defenders what you see before it becomes a problem."
+  },
+  {
+    category: "Communication",
+    scenario: "You've made a brilliant save in the first half. At half time, your coach asks you to organise the defence better because you've been too quiet.",
+    question: "How do you respond to this feedback?",
+    options: [
+      "Feel annoyed — you just made a great save, what more does the coach want?",
+      "Accept it — the save was great, but if you'd organised your defence better, you might not have needed to make it",
+      "Ignore it — saves are what matter, not talking",
+      "Promise to shout more but don't really change anything"
+    ],
+    correct: 1,
+    explanation: "Your coach is right. A brilliant save is great, but the best keepers prevent shots from happening in the first place through organisation. If your defence was better positioned, the chance might never have come. The save is a last resort — organising to stop the shot is the first line of defence. This is a hard lesson but an important one at your level.",
+    tip: "Shift your mindset from 'I'm here to make saves' to 'I'm here to stop goals.' Saves are part of that — but communication and organisation stop far more goals than diving ever will. The quietest keeper in the league is usually the busiest."
+  },
+  {
+    category: "Communication",
+    scenario: "Your right-back is about to take a throw-in in your own half. The opposition are pressing and there aren't many options. You can see a midfielder dropping into space that your right-back can't see.",
+    question: "What do you do?",
+    options: [
+      "Nothing — throw-ins are the outfield players' job",
+      "Shout to your right-back where the free player is: 'Play it inside — midfielder's free!'",
+      "Wave at the midfielder to move somewhere else",
+      "Run to the touchline and take the throw yourself"
+    ],
+    correct: 1,
+    explanation: "You can see the whole pitch, your right-back is looking at a wall of opponents. Help her by telling her where the free player is. Simple, specific: 'Inside! Midfielder's free!' This kind of communication makes your team better at keeping the ball. Good keepers don't just organise the defence — they help the team play.",
+    tip: "Communication isn't just about defending. Help your team keep the ball too. If you can see a free player that nobody else can, shout it. You're the team's extra pair of eyes for everything, not just when the ball is near your goal."
+  },
+  {
+    category: "Communication",
+    scenario: "Your team is winning 2-1 with 10 minutes to go. The opposition are pushing hard. Your defenders are dropping deeper and deeper towards you.",
+    question: "What do you communicate?",
+    options: [
+      "Nothing — just let them defend how they want",
+      "'HOLD! HOLD THE LINE!' — stop them from dropping too deep and inviting pressure",
+      "'DROP deeper!' — protect the lead by sitting back",
+      "'Push up!' — get them to the halfway line"
+    ],
+    correct: 1,
+    explanation: "When defenders drop too deep, they invite pressure — the opposition can shoot from closer, crosses become more dangerous, and the ball never leaves your half. You need to hold the defensive line at a sensible height. 'Hold the line!' stops them from retreating further. You want a compact, organised shape — not everyone on the edge of the six-yard box.",
+    tip: "Managing the defensive line is one of your most important jobs in the last 10 minutes of a close game. 'Hold!', 'Step!', 'Squeeze!', 'Compact!' — keep your team's shape. A team that defends on the edge of their own box for 10 minutes will concede."
+  },
+
+  // ── DECISION MAKING (additional) ──
+  {
+    category: "Decision Making",
+    scenario: "An attacker is through on goal. It's a true 1v1. She's about 15 yards out, running at you with the ball at her feet. You've come out and set yourself.",
+    question: "What's your body position?",
+    options: [
+      "Stand tall and stiff to look as big as possible",
+      "Low, on the balls of your feet, hands out wide and low, slightly crouched — ready to react in any direction",
+      "One hand up, one hand down, lean to one side to tempt her",
+      "Sit back on your heels so you can spring forward"
+    ],
+    correct: 1,
+    explanation: "In a 1v1, your stance is everything. Get low — you're more likely to need to save a low shot than a high one. Hands out and low, weight forward on the balls of your feet so you can spring either way. Slightly crouched so you can push off. Standing tall and stiff makes you slower to react. Sitting on your heels means you can't push off quickly. Make yourself big in the right way — wide and low, not tall and narrow.",
+    tip: "Practise your 1v1 stance specifically. Most goals in 1v1s are low — the attacker tries to slip it past you on the ground. Being low to start means you're already close to where the ball is going. Quick feet, soft hands, stay patient."
+  },
+  {
+    category: "Decision Making",
+    scenario: "You spill a cross in the first half. It doesn't lead to a goal but it was messy. Now in the second half, another cross comes in and you're worried about dropping it again.",
+    question: "How do you handle this mentally?",
+    options: [
+      "Don't come for any more crosses — play it safe for the rest of the game",
+      "Forget the first half mistake — judge this cross on its own. If you can get there, call it and commit fully",
+      "Punch everything for the rest of the game to avoid another spill",
+      "Let your defenders deal with all the crosses"
+    ],
+    correct: 1,
+    explanation: "Every ball is a new decision. One spill doesn't change your ability — you're still the same keeper. If the cross is in your range, call for it and commit fully. If you start avoiding crosses or punching everything, you make yourself worse, not better. The mistake is already gone. Your job is to win the next ball with confidence.",
+    tip: "Mental toughness is THE most important quality for a goalkeeper. You will make mistakes — every keeper does. The best keepers have short memories: deal with it, learn from it, then move on completely. If you carry a mistake into the next decision, you'll make two mistakes."
+  },
+  {
+    category: "Decision Making",
+    scenario: "Your team is losing 1-0 in the last 5 minutes. A goal kick is awarded to you.",
+    question: "How do you take it?",
+    options: [
+      "Play short to your centre-backs like normal — keep possession",
+      "Quickly — get the ball into play fast to maximise the time your team has to score. Aim for your best aerial player or a zone where your team can win the second ball",
+      "Take your time — slow the game down and think about it",
+      "Kick it as far as you can and hope"
+    ],
+    correct: 1,
+    explanation: "You're chasing the game — every second counts. Take the goal kick quickly to keep the tempo high. Aim for your best header of the ball or for a zone where your team has numbers to win the second ball. 'As far as possible' isn't a plan — but 'quick delivery to our number 9 who's strong in the air' is. Playing short and keeping possession is normally right, but with 5 minutes left at 1-0 down, you need to push forward.",
+    tip: "Game management is part of being a keeper. When you're behind, speed up restarts. When you're ahead, use every second of the rules (without time-wasting). Your tempo on goal kicks, free kicks, and claiming the ball sets the pace for your whole team."
+  },
+  {
+    category: "Decision Making",
+    scenario: "You've just made three fantastic saves in a row. You feel unstoppable. The next shot comes in — a tame effort from 20 yards, straight at you.",
+    question: "How do you approach this save?",
+    options: [
+      "Easy — just stick your hands up, you've got this",
+      "Treat it exactly the same as the hard saves — proper technique, body behind, secure it cleanly",
+      "Try something flashy to keep the momentum going",
+      "Leave it — it's going wide anyway"
+    ],
+    correct: 1,
+    explanation: "This is where goals get lost. After making great saves, keepers get overconfident and drop a simple one. Treat every shot with the same technique and focus — body behind, hands in the W, clean catch. The easy save you drop is the one that haunts you. The crowd doesn't care if your technique is boring when you catch it cleanly.",
+    tip: "Concentration is a skill. Staying focused after a quiet period or after a burst of great saves is really hard — your brain relaxes. Train yourself to reset after every save: 'Next ball.' Never assume a shot is easy until it's in your hands."
+  },
+  {
+    category: "Decision Making",
+    scenario: "You're warming up before a big game. You're feeling nervous — your hands are a bit shaky, your stomach is tight.",
+    question: "How do you deal with pre-match nerves?",
+    options: [
+      "Ignore them — pretend you're fine and push through",
+      "Tell your coach you're too nervous to play",
+      "Use the nerves — focus on your warm-up routine, take deep breaths, remind yourself that nerves mean you care, and channel them into sharpness",
+      "Try to distract yourself by chatting with teammates about non-football stuff"
+    ],
+    correct: 2,
+    explanation: "Nerves are normal — every top keeper gets them. The trick is not to fight them but to use them. Deep breaths slow your heart rate. A consistent warm-up routine gives you something familiar to focus on. Remind yourself: nervousness is excitement that hasn't found its direction yet. Once the first save comes, the nerves disappear. You've done this hundreds of times.",
+    tip: "Develop a pre-match routine that you do every game — the same warm-up drills, the same stretches, the same order. It becomes your comfort zone. When your body does familiar things, your brain calms down. The best keepers in the world still get butterflies — they just know how to use them."
+  }
+];
+
+// ═══════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════
+const categories = [...new Set(questions.map(q => q.category))];
+let state = {
+  mode: 'all',
+  selectedCategories: new Set(categories),
+  queue: [],
+  index: 0,
+  correct: 0,
+  wrong: 0,
+  streak: 0,
+  answered: false,
+  categoryStats: {}
+};
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+function init() {
+  const grid = document.getElementById('categoryGrid');
+  grid.innerHTML = '';
+  const icons = {
+    'Positioning': '📍',
+    'Distribution': '🦶',
+    'Shot Stopping': '🧤',
+    'Set Pieces': '⚽',
+    'Sweeper-Keeper': '🏃',
+    'Communication': '📣',
+    'Decision Making': '🧠'
+  };
+  categories.forEach(cat => {
+    const count = questions.filter(q => q.category === cat).length;
+    const card = document.createElement('div');
+    card.className = 'cat-card selected';
+    card.id = 'cat_' + cat.replace(/\s/g,'_');
+    card.innerHTML = `<div class="cat-icon">${icons[cat]||'⚽'}</div><h3>${cat}</h3><p>${count} question${count!==1?'s':''}</p>`;
+    card.addEventListener('click', function() { toggleCategory(cat, card); });
+    grid.appendChild(card);
+  });
+}
+
+function toggleCategory(cat, el) {
+  if (state.selectedCategories.has(cat)) {
+    if (state.selectedCategories.size > 1) {
+      state.selectedCategories.delete(cat);
+      el.classList.remove('selected');
+    }
+  } else {
+    state.selectedCategories.add(cat);
+    el.classList.add('selected');
+  }
+}
+
+function setMode(mode) {
+  state.mode = mode;
+  ['modeAll','modeRandom','modeRandom20','modeRandom30'].forEach(id => document.getElementById(id).classList.remove('active'));
+  const ids = {all:'modeAll', random10:'modeRandom', random20:'modeRandom20', random30:'modeRandom30'};
+  document.getElementById(ids[mode]).classList.add('active');
+}
+
+function buildQueue() {
+  let pool = questions.filter(q => state.selectedCategories.has(q.category));
+  // shuffle
+  pool = pool.sort(() => Math.random() - 0.5);
+  if (state.mode === 'random10') pool = pool.slice(0, 10);
+  if (state.mode === 'random20') pool = pool.slice(0, 20);
+  if (state.mode === 'random30') pool = pool.slice(0, 30);
+  return pool;
+}
+
+function startGame() {
+  state.queue = buildQueue();
+  state.index = 0;
+  state.correct = 0;
+  state.wrong = 0;
+  state.streak = 0;
+  state.answered = false;
+  state.categoryStats = {};
+  categories.forEach(c => { state.categoryStats[c] = { correct: 0, total: 0 }; });
+
+  show('quizScreen');
+  updateScoreBar();
+  renderQuestion();
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function renderQuestion() {
+  if (state.index >= state.queue.length) { showEnd(); return; }
+  const q = state.queue[state.index];
+  state.answered = false;
+
+  document.getElementById('questionTag').textContent = q.category;
+  document.getElementById('questionCounter').textContent = `Q${state.index+1} of ${state.queue.length}`;
+  document.getElementById('scenarioText').textContent = q.scenario;
+  document.getElementById('questionText').textContent = q.question;
+  document.getElementById('progressBar').style.width = `${(state.index / state.queue.length) * 100}%`;
+
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', function() { selectAnswer(i); });
+    container.appendChild(btn);
+  });
+
+  const exp = document.getElementById('explanationPanel');
+  exp.classList.remove('show');
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('scoreRemaining').textContent = state.queue.length - state.index;
+}
+
+function selectAnswer(chosen) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const q = state.queue[state.index];
+  const btns = document.querySelectorAll('.option-btn');
+
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.correct && i !== chosen) btn.classList.add('reveal-correct');
+    if (i === chosen && i === q.correct) btn.classList.add('correct');
+    if (i === chosen && i !== q.correct) btn.classList.add('wrong');
+  });
+
+  const isCorrect = chosen === q.correct;
+
+  // Stats
+  if (!state.categoryStats[q.category]) state.categoryStats[q.category] = {correct:0,total:0};
+  state.categoryStats[q.category].total++;
+
+  if (isCorrect) {
+    state.correct++;
+    state.streak++;
+    state.categoryStats[q.category].correct++;
+  } else {
+    state.wrong++;
+    state.streak = 0;
+  }
+
+  updateScoreBar();
+  showExplanation(q, isCorrect);
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function showExplanation(q, isCorrect) {
+  const panel = document.getElementById('explanationPanel');
+  const resultLine = document.getElementById('resultLine');
+  resultLine.textContent = isCorrect ? '✓ Correct!' : '✗ Not quite — here\'s why:';
+  resultLine.className = 'result-line ' + (isCorrect ? 'correct' : 'wrong');
+  document.getElementById('explanationText').textContent = q.explanation;
+  document.getElementById('coachingTip').textContent = '🧠 ' + q.tip;
+  panel.classList.add('show');
+}
+
+function updateScoreBar() {
+  document.getElementById('scoreCorrect').textContent = state.correct;
+  document.getElementById('scoreWrong').textContent = state.wrong;
+  document.getElementById('scoreStreak').textContent = state.streak;
+}
+
+function nextQuestion() {
+  state.index++;
+  renderQuestion();
+}
+
+function skipQuestion() {
+  if (state.answered) { nextQuestion(); return; }
+  // move current question to end
+  const q = state.queue.splice(state.index, 1)[0];
+  state.queue.push(q);
+  renderQuestion();
+}
+
+// ═══════════════════════════════════════════
+// END SCREEN
+// ═══════════════════════════════════════════
+function showEnd() {
+  document.getElementById('progressBar').style.width = '100%';
+  const total = state.correct + state.wrong;
+  const pct = total > 0 ? Math.round((state.correct / total) * 100) : 0;
+
+  let grade, emoji, msg;
+  if (pct >= 90) { grade='Elite'; emoji='🏆'; msg='Outstanding decision-making. You\'re thinking like a top-level keeper.'; }
+  else if (pct >= 75) { grade='Strong'; emoji='⭐'; msg='Solid tactical awareness. A few decisions to sharpen up — but very good overall.'; }
+  else if (pct >= 60) { grade='Developing'; emoji='💪'; msg='Good foundation. Review the explanations on the ones you missed — they\'ll come quickly.'; }
+  else { grade='Keep Training'; emoji='📚'; msg='Don\'t worry — these are tough scenarios. Go through the explanations and try again.'; }
+
+  document.getElementById('gradeEmoji').textContent = emoji;
+  document.getElementById('endScoreText').textContent = `${state.correct}/${total} — ${pct}% — ${grade}`;
+  document.getElementById('endMessage').textContent = msg;
+
+  const breakdown = document.getElementById('categoryBreakdown');
+  breakdown.innerHTML = '';
+  categories.forEach(cat => {
+    const s = state.categoryStats[cat];
+    if (!s || s.total === 0) return;
+    const p = Math.round((s.correct / s.total) * 100);
+    const card = document.createElement('div');
+    card.className = 'breakdown-card';
+    card.innerHTML = `<div class="cat-name">${cat}</div><div class="cat-score">${s.correct}/${s.total} <span style="font-size:0.9rem;color:#4a7a9b">${p}%</span></div><div class="cat-bar"><div class="cat-fill" style="width:${p}%"></div></div>`;
+    breakdown.appendChild(card);
+  });
+
+  show('endScreen');
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function show(id) {
+  ['startScreen','quizScreen','endScreen'].forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+}
+
+function goToStart() {
+  show('startScreen');
+}
+
+// ── Start ──
+init();
+</script>
+</body>
+</html>
