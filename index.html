@@ -2413,8 +2413,17 @@ let state = {
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
+const CAT_ICONS = {
+  // Goalkeeper categories
+  'Positioning': '📍', 'Distribution': '🦶', 'Shot Stopping': '🧤',
+  'Set Pieces': '⚽', 'Sweeper-Keeper': '🏃', 'Communication': '📣', 'Decision Making': '🧠',
+  // Outfield categories
+  'Receiving': '🙌', 'Pressing': '🔥', 'Defending': '🛡️', 'Movement': '🏃',
+  'Combination Play': '🔄', 'Finishing': '🎯', 'Transition': '⚡',
+  'Support Play': '🤝', 'Tactics': '📋', 'Shape': '📐',
+};
+
 function init() {
-  // Position screen
   const posGrid = document.getElementById('positionGrid');
   posGrid.innerHTML = '';
   const posData = [
@@ -2431,20 +2440,20 @@ function init() {
     card.addEventListener('click', function() { selectPosition(p); });
     posGrid.appendChild(card);
   });
+}
 
-  // Category grid (goalkeeper only)
+function buildCategoryGrid(pool) {
+  const cats = [...new Set(pool.map(q => q.category))].sort();
+  state.selectedCategories = new Set(cats);
+
   const grid = document.getElementById('categoryGrid');
   grid.innerHTML = '';
-  const icons = {
-    'Positioning': '📍', 'Distribution': '🦶', 'Shot Stopping': '🧤',
-    'Set Pieces': '⚽', 'Sweeper-Keeper': '🏃', 'Communication': '📣', 'Decision Making': '🧠'
-  };
-  categories.forEach(cat => {
-    const count = questions.filter(q => q.category === cat).length;
+  cats.forEach(cat => {
+    const count = pool.filter(q => q.category === cat).length;
     const card = document.createElement('div');
     card.className = 'cat-card selected';
     card.id = 'cat_' + cat.replace(/\s/g,'_');
-    card.innerHTML = `<div class="cat-icon">${icons[cat]||'⚽'}</div><h3>${cat}</h3><p>${count} question${count!==1?'s':''}</p>`;
+    card.innerHTML = `<div class="cat-icon">${CAT_ICONS[cat]||'⚽'}</div><h3>${cat}</h3><p>${count} question${count!==1?'s':''}</p>`;
     card.addEventListener('click', function() { toggleCategory(cat, card); });
     grid.appendChild(card);
   });
@@ -2453,20 +2462,16 @@ function init() {
 function selectPosition(p) {
   state.position = p.id;
 
-  // Update start screen
+  // Build category pool for this position
+  const pool = p.id === 'goalkeeper'
+    ? questions
+    : positionQuestions.filter(q => q.scope === p.id || q.scope === 'outfield' || q.scope === 'team');
+
+  buildCategoryGrid(pool);
+
+  // Update start screen text
   document.getElementById('startHeading').textContent = `Ready to train, ${p.name}? ${p.icon}`;
   document.getElementById('positionBadge').innerHTML = `${p.icon} <span class="pos-badge-name">${p.name}</span> &nbsp;· change`;
-
-  // Category filter only makes sense for goalkeeper
-  const catSection = document.getElementById('categoryGrid');
-  const catHint = catSection.nextElementSibling;
-  if (p.id === 'goalkeeper') {
-    catSection.style.display = '';
-    catHint.style.display = '';
-  } else {
-    catSection.style.display = 'none';
-    catHint.style.display = 'none';
-  }
 
   renderLevelCard();
   renderBestScores();
@@ -2500,7 +2505,8 @@ function buildQueue() {
   } else {
     pool = positionQuestions.filter(q =>
       (q.scope === state.position || q.scope === 'outfield' || q.scope === 'team') &&
-      q.difficulty <= maxDiff
+      q.difficulty <= maxDiff &&
+      state.selectedCategories.has(q.category)
     );
   }
   pool = pool.sort(() => Math.random() - 0.5);
