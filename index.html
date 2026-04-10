@@ -452,6 +452,42 @@
       text-align: right;
     }
 
+    .btn-reset {
+      background: transparent;
+      border: 1px solid #2a4a6a;
+      color: #4a7a9b;
+      font-size: 0.75rem;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-reset:hover { color: #eb5757; border-color: #eb5757; }
+
+    .reset-confirm {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: #eb5757;
+      flex-wrap: wrap;
+    }
+
+    .btn-reset-yes {
+      border-color: #eb5757;
+      color: #eb5757;
+    }
+
+    .btn-reset-yes:hover { background: #3d0d0d; }
+
+    .btn-reset-no {
+      border-color: #2a4a6a;
+      color: #7a9cc4;
+    }
+
     /* ── Start screen ── */
     .start-screen {
       text-align: center;
@@ -1916,12 +1952,13 @@ function loadScores() {
   try { return JSON.parse(localStorage.getItem('gk_best_scores')) || []; } catch(e) { return []; }
 }
 
-function renderBestScores() {
+function renderBestScores(confirmingReset) {
   const panel = document.getElementById('bestScoresPanel');
   const scores = loadScores();
   if (scores.length === 0) { panel.innerHTML = ''; return; }
   const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
-  panel.innerHTML = '<h3>Best Scores</h3>' + scores.map((s, i) =>
+
+  const rows = scores.map((s, i) =>
     `<div class="score-row">
       <span class="score-rank">${medals[i]}</span>
       <span class="score-pct">${s.points != null ? s.points + ' pts' : s.pct + '%'}</span>
@@ -1929,6 +1966,23 @@ function renderBestScores() {
       <span class="score-detail">${s.mode}<br>${s.date}</span>
     </div>`
   ).join('');
+
+  const footer = confirmingReset
+    ? `<div class="reset-confirm">
+        <span>Are you sure? This can't be undone.</span>
+        <button class="btn-reset btn-reset-yes" onclick="resetScores()">Yes, reset</button>
+        <button class="btn-reset btn-reset-no" onclick="renderBestScores(false)">Cancel</button>
+       </div>`
+    : `<div style="text-align:right; margin-top:8px;">
+        <button class="btn-reset" onclick="renderBestScores(true)">Reset leaderboard</button>
+       </div>`;
+
+  panel.innerHTML = '<h3>Best Scores</h3>' + rows + footer;
+}
+
+function resetScores() {
+  try { localStorage.removeItem('gk_best_scores'); } catch(e) {}
+  renderBestScores();
 }
 
 // ── Start ──
