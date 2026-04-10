@@ -642,6 +642,93 @@
     .mode-btn:hover { border-color: #5a9bd8; }
 
     .hidden { display: none; }
+
+    /* ── Position screen ── */
+    .position-screen {
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .position-screen h2 {
+      font-size: 1.6rem;
+      color: #6fcf97;
+      margin-bottom: 8px;
+    }
+
+    .position-screen > p {
+      font-size: 0.9rem;
+      color: #7a9cc4;
+      margin-bottom: 24px;
+    }
+
+    .position-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .position-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #07192e;
+      border: 1.5px solid #1e3a56;
+      border-radius: 14px;
+      padding: 16px 20px;
+      cursor: pointer;
+      text-align: left;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(106,207,151,0.2);
+      transition: all 0.15s;
+    }
+
+    .position-card:hover, .position-card:active {
+      border-color: #6fcf97;
+      background: #0d2a47;
+    }
+
+    .position-card * { pointer-events: none; }
+
+    .position-card .pos-icon {
+      font-size: 2rem;
+      min-width: 44px;
+      text-align: center;
+    }
+
+    .position-card .pos-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #e8f0fe;
+      margin-bottom: 3px;
+    }
+
+    .position-card .pos-desc {
+      font-size: 0.77rem;
+      color: #4a7a9b;
+      line-height: 1.35;
+    }
+
+    /* Position badge on start screen */
+    .position-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #07192e;
+      border: 1px solid #1e3a56;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      color: #7a9cc4;
+      margin-bottom: 18px;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .position-badge:hover { border-color: #5a9bd8; color: #c8daf0; }
+    .position-badge .pos-badge-name { font-weight: 700; color: #6fcf97; }
   </style>
 </head>
 <body>
@@ -658,11 +745,18 @@
 </div>
 
 <main>
+  <!-- Position screen -->
+  <div id="positionScreen" class="position-screen">
+    <h2>What position do you play?</h2>
+    <p>You'll get scenarios built around your role in a possession-based, play-out-the-back team.</p>
+    <div class="position-grid" id="positionGrid"></div>
+  </div>
+
   <!-- Start screen -->
-  <div id="startScreen" class="start-screen">
-    <h2>Ready to train? 🧤</h2>
-    <p>Each question puts you in a real match situation.</p>
-    <p>Pick the best goalkeeper decision — then see the coaching breakdown.</p>
+  <div id="startScreen" class="hidden start-screen">
+    <h2 id="startHeading">Ready to train?</h2>
+    <div id="positionBadge" class="position-badge" onclick="show('positionScreen')"></div>
+    <p>Pick the best decision — then see the coaching breakdown.</p>
 
     <div id="levelCard" class="level-card"></div>
 
@@ -751,6 +845,7 @@
       <button class="btn btn-primary" onclick="startGame()">Play Again</button>
       <button class="btn btn-primary" id="redoWrongBtn" onclick="redoWrong()" style="background:#7a4a2e; display:none;">Redo Wrong Answers</button>
       <button class="btn btn-secondary" onclick="goToStart()">Change Settings</button>
+      <button class="btn btn-secondary" onclick="show('positionScreen')">Change Position</button>
     </div>
   </div>
 </main>
@@ -1649,6 +1744,585 @@ const questions = [
 ];
 
 // ═══════════════════════════════════════════
+// OUTFIELD QUESTION BANK
+// ═══════════════════════════════════════════
+const positionQuestions = [
+
+  // ── DEFENDER ──
+  {
+    scope: 'defender', category: 'Receiving', difficulty: 1,
+    scenario: "Your goalkeeper plays the ball short to you under pressure. An opposition striker is closing you down from 6 yards away.",
+    question: "How should your body be positioned when the ball arrives?",
+    options: [
+      "Facing your own goal so you can play it back easily",
+      "Side-on — half-turned, so you can see the press and the rest of the pitch",
+      "Facing the opposition goal so you're ready to drive forward",
+      "Square on to the ball — standard receiving stance"
+    ],
+    correct: 1,
+    explanation: "Side-on body shape is the answer in almost every pressured receiving situation. One half of your vision covers the incoming press — so you know how much time you have. The other half shows your forward passing options. If you receive facing your own goal, the only easy option is backwards. Side-on gives you the whole picture before you touch the ball.",
+    tip: "Scan before the ball arrives. Then open your body based on what you've seen — this decision should be made before the ball gets to you, not during."
+  },
+  {
+    scope: 'defender', category: 'Receiving', difficulty: 1,
+    scenario: "You have the ball as a centre-back. Your midfielders are all marked. No pass forward is immediately available. An opposition striker is pressing you.",
+    question: "What should you do?",
+    options: [
+      "Force a pass through to a marked midfielder",
+      "Carry the ball forward past the press",
+      "Play it back to the goalkeeper to reset and start again",
+      "Hoof it long and hope"
+    ],
+    correct: 2,
+    explanation: "Playing it back to the goalkeeper is a legitimate and smart option when all forward passes are blocked. It resets the attack, forces the press to shift again, and keeps possession. This is playing out the back working as designed — be patient, recycle, and wait for the right moment. Forcing a pass through to a marked player risks a turnover in a dangerous area.",
+    tip: "Playing backwards isn't giving up — it's resetting. The press has to move again, and that movement creates new gaps. Be patient."
+  },
+  {
+    scope: 'defender', category: 'Pressing', difficulty: 2,
+    scenario: "The opposition centre-back receives a pass that comes slightly behind them, and they take a heavy first touch to control it.",
+    question: "What should you do?",
+    options: [
+      "Hold your position — they'll recover",
+      "Press immediately — a heavy touch is a press trigger",
+      "Wait and see what they do next",
+      "Step up but don't fully commit"
+    ],
+    correct: 1,
+    explanation: "A heavy first touch is a classic press trigger — the defender is momentarily out of control and can't play a clean quick pass. This is the moment to press hard and fast. If your whole team reads the trigger together, you win the ball in a dangerous position. Waiting wastes the opportunity. Press triggers only work when everyone reacts immediately.",
+    tip: "Press triggers: heavy touch, back to goal in isolation, goalkeeper about to play under high press. Learn to read them instinctively — half a second of hesitation means the trigger window closes."
+  },
+  {
+    scope: 'defender', category: 'Positioning', difficulty: 2,
+    scenario: "Your team plays a high defensive line. The opposition play a through ball over the top. You and your defensive partner are level — neither of you is significantly closer to the ball.",
+    question: "What happens next?",
+    options: [
+      "Both of you sprint for the ball",
+      "The one closer to the ball goes; the other drops to cover",
+      "Both hold position — let the goalkeeper deal with it",
+      "The one further from the ball goes to surprise the attacker"
+    ],
+    correct: 1,
+    explanation: "One CB attacks the ball, the other covers. The covering CB drops at an angle behind, protecting the space in case the first CB doesn't win it cleanly. Both going leaves a huge gap if the ball breaks. The key is quick communication — 'mine!' or 'cover!' — so there's no confusion. If both freeze or both go, the attacker wins.",
+    tip: "'Cover!' — one word that tells your partner you're behind them. The pressing CB can then go fully committed, knowing there's cover. Simple communication prevents goals."
+  },
+  {
+    scope: 'defender', category: 'Distribution', difficulty: 2,
+    scenario: "You have the ball as a centre-back. There's a passing lane to your central midfielder — it's tight, but available. If you wait, the window will close.",
+    question: "What do you do?",
+    options: [
+      "Wait until the pass is completely clear before playing it",
+      "Play it now — the window is open, trust your midfielder to handle the pressure",
+      "Play it back to the goalkeeper to buy more time",
+      "Carry the ball into the space yourself"
+    ],
+    correct: 1,
+    explanation: "Playing out the back means trusting your teammates to receive under pressure. If you wait for a 'safe' pass, the window closes and you end up playing backwards or getting pressed harder. Your job is to recognise the window; your midfielder's job is to receive and deal with the pressure. The pass needs to be accurate and well-weighted — but it should be played.",
+    tip: "The best CB-to-midfielder combination in a pressing team: the CB plays the ball early into a tight window; the midfielder has scanned and already knows what they're doing with it. Timing and trust."
+  },
+  {
+    scope: 'defender', category: 'Defending', difficulty: 2,
+    scenario: "A quick opposition winger is running at you 1v1 on the right side. They're in stride and moving at pace.",
+    question: "What's your most important priority?",
+    options: [
+      "Sprint forward and try to win the ball immediately",
+      "Jockey — slow them down, stay on your feet, show them towards the corner",
+      "Drop very deep to give the goalkeeper more protection",
+      "Tackle hard before they get into their stride"
+    ],
+    correct: 1,
+    explanation: "Jockeying — staying patient, showing them where you want them to go — is far better than diving in on a quick player in stride. Sprint-tackling usually results in either a foul or getting beaten completely. Your job is to slow them down, show them towards the corner or the touchline, and wait for cover to arrive. Only tackle when you're certain to win it.",
+    tip: "The 1v1 defender's goal is first to stop the forward run, then win the ball. Many defenders reverse the order and dive in — leaving space behind. Stop the run first."
+  },
+  {
+    scope: 'defender', category: 'Distribution', difficulty: 3,
+    scenario: "Your team has just won the ball on the left side. The ball falls to you, the right centre-back. The opposition's entire press has shifted left to cover. Your right winger is completely free on the far side.",
+    question: "What's your first option?",
+    options: [
+      "Play short to the nearest midfielder — recycle possession safely",
+      "Switch the ball quickly to the free right winger",
+      "Dribble through the gap created by their press",
+      "Play it back to the goalkeeper to reset from deeper"
+    ],
+    correct: 1,
+    explanation: "A fast switch of play exploits the press. The whole opposition has moved left — now there's a free player on the right with space to attack. The quicker you switch, the less time they have to recover and reorganise. Recycling short keeps the ball in the pressed zone. Play out the back is about finding the free player — and right now, they're on the far side.",
+    tip: "When you win the ball, immediately think: where did their press come from? The opposite side is usually the free side. Get the ball there quickly."
+  },
+  {
+    scope: 'defender', category: 'Defending', difficulty: 3,
+    scenario: "An opposition midfielder is making a late run from deep into your defensive line. Your defensive partner is tracking the striker. No midfielder has tracked the runner.",
+    question: "What do you do?",
+    options: [
+      "Stay in position — it's not your runner",
+      "Call 'runner!' loudly AND take responsibility yourself if no one else can get back",
+      "Push up to try to catch them offside",
+      "Point at the runner and wait for a midfielder to deal with it"
+    ],
+    correct: 1,
+    explanation: "Shout AND act. Call 'runner!' to alert your team — but if no midfielder can get back in time, you have to track that run yourself. Leaving a free runner in behind the defensive line is extremely dangerous. Trying to play offside without the whole line moving in coordination is a gamble. Your job: don't let them have a free run at goal.",
+    tip: "Communication and responsibility go together. Shout what you see — but don't just shout and hope someone else solves it. If no one else can deal with it, you deal with it."
+  },
+
+  // ── MIDFIELDER ──
+  {
+    scope: 'midfielder', category: 'Receiving', difficulty: 1,
+    scenario: "The ball is being played to you in central midfield from the right centre-back. An opposition midfielder is pressing from your right.",
+    question: "How should you position yourself to receive?",
+    options: [
+      "Facing the right CB so you can control the ball cleanly",
+      "Half-turned, side-on — so your first touch can go forward or left, away from the press",
+      "Facing forward so you're ready to drive ahead immediately",
+      "Back to goal so you can shield from the pressure on your right"
+    ],
+    correct: 1,
+    explanation: "Side-on body shape is fundamental. With the press coming from your right, receiving half-turned means your first touch can go left or forward — away from pressure. If you receive facing the CB, your only clean option is back where it came from. Being half-turned before the ball arrives means your first touch can be a pass, carry, or turn — you choose, not the press.",
+    tip: "Open your hips 2-3 seconds before the ball arrives. That's your scanning window. What you see tells you where to open your body."
+  },
+  {
+    scope: 'midfielder', category: 'Movement', difficulty: 1,
+    scenario: "Your centre-back has the ball and is being pressed hard. You're a central midfielder. An opposition player is marking you closely.",
+    question: "What do you do to give the CB a passing option?",
+    options: [
+      "Stay in position and call for the ball",
+      "Create separation — move towards your marker, then sharply away to get free",
+      "Run forward to get out of the congested area",
+      "Wave your arms so the CB can see you"
+    ],
+    correct: 1,
+    explanation: "Standing still just lets your marker hold position easily. You need to create separation through movement — drag your marker one way, then break the other. Even half a yard of space is enough to receive and play. Your job is to make yourself available; the CB's job is to find you. Movement creates the option; stillness kills it.",
+    tip: "Drag and break. Move towards your marker to invite contact, then sharply accelerate away. The marker has to react — and their reaction gives you the yard you need."
+  },
+  {
+    scope: 'midfielder', category: 'Pressing', difficulty: 2,
+    scenario: "Your striker has pressed the opposition centre-back. The CB is under pressure but could still play a short pass to the opposition holding midfielder.",
+    question: "What's your job in the press?",
+    options: [
+      "Press the CB alongside your striker",
+      "Step up and cut off the pass to the holding midfielder — close the escape route",
+      "Drop back and stay compact in your shape",
+      "Press the goalkeeper in case the CB plays it back"
+    ],
+    correct: 1,
+    explanation: "When your striker presses the CB, your job is to cut off the nearest escape route — in this case the holding midfielder. If that pass is easy, the press fails. By cutting it off, you pin the CB between your striker and a blocked pass — forcing a mistake or a long ball under pressure. Pressing alongside your striker leaves the midfielder wide open.",
+    tip: "Pressing works as a team. The striker presses the ball. The midfielder cuts off the pass. The full-back covers the wide option. Everyone has a job — do yours."
+  },
+  {
+    scope: 'midfielder', category: 'Distribution', difficulty: 2,
+    scenario: "You've received in midfield and turned. There's a gap in the opposition's defensive block and your striker is making a run into the channel behind the defence.",
+    question: "What do you do?",
+    options: [
+      "Recycle it sideways — safe possession is the priority",
+      "Play the ball through the gap into your striker's run",
+      "Drive forward with the ball yourself",
+      "Shoot from 25 yards"
+    ],
+    correct: 1,
+    explanation: "Playing the pass through the lines into the striker's run is the highest-value action available. Your striker has done the hard work to create the run — now you need the vision and technique to execute the pass. Playing sideways when a through ball is available is exactly what the press wants: it keeps the game in front of them. See the run. Trust yourself. Play the pass.",
+    tip: "Every pass through the lines is preceded by scanning. You can't see the run if your head's down when you receive. Heads up, always."
+  },
+  {
+    scope: 'midfielder', category: 'Receiving', difficulty: 2,
+    scenario: "You receive the ball in midfield with an opposition midfielder tight behind you. Before receiving, you scanned and saw there's space in front of you.",
+    question: "What do you do?",
+    options: [
+      "Lay it off to the nearest CB immediately — too risky to turn",
+      "Take your first touch into the space in front and drive forward",
+      "Take a touch back into the defender to try to win a foul",
+      "Play it square to the other midfielder"
+    ],
+    correct: 1,
+    explanation: "You scanned before receiving — you already know there's space. Use it. Your first touch away from pressure and into the space commits the opposition midfielder and advances your team. This is the key skill of a play-out-the-back midfielder: receive, beat the press, progress. The information from your scan is what makes this possible — if you hadn't looked, you couldn't turn confidently.",
+    tip: "Scan before the ball arrives. That knowledge is what lets you turn — you're not guessing, you're reacting to information you already have."
+  },
+  {
+    scope: 'midfielder', category: 'Movement', difficulty: 2,
+    scenario: "Your striker has dropped deep to receive. They have the ball with a defender close behind. You're 10 yards away in central midfield.",
+    question: "What's the most useful thing you can do?",
+    options: [
+      "Hold your position — the striker will deal with it",
+      "Make a run beyond the striker to create a give-and-go option",
+      "Move wide so they have a sideways pass option",
+      "Call loudly for them to pass it back to you"
+    ],
+    correct: 1,
+    explanation: "When a striker drops and receives, a midfielder running beyond them creates a give-and-go opportunity — one of the most effective combinations against a press. The striker lays it off first time into your run, playing through the very defender who just committed to pressing them. The run itself is the key: it gets in behind the defender who's just stepped forward.",
+    tip: "The give-and-go works because it plays through the press rather than around it. Practice the timing: your run starts as the striker's feet open to pass."
+  },
+  {
+    scope: 'midfielder', category: 'Defending', difficulty: 3,
+    scenario: "Your team has just lost the ball in the opposition half. The opposition have immediately played it to their holding midfielder.",
+    question: "What do you do in the first 5 seconds?",
+    options: [
+      "Sprint back into your defensive shape immediately",
+      "Press the holding midfielder immediately — counter-press to win it back",
+      "Organise your shape first, then press",
+      "Shout at the player who lost the ball"
+    ],
+    correct: 1,
+    explanation: "The 5 seconds immediately after losing the ball are the best chance to win it back. Counter-pressing — pressing hard the moment you lose possession — catches the opposition disorganised and in transition. After 5 seconds, they've settled and passing lanes have opened; now you drop into defensive shape. React instantly to turnovers. Don't wait to organise.",
+    tip: "Counter-press within 5 seconds, then drop into shape. The moment you lose the ball, everyone around it swarms. After 5 seconds, the opportunity has passed — then it's about defensive structure."
+  },
+  {
+    scope: 'midfielder', category: 'Distribution', difficulty: 3,
+    scenario: "Your team is building out of the back under a high press. You're in central midfield. Your options are: (a) a tight pass through the lines, (b) a sideways recycle, (c) playing backwards to a CB.",
+    question: "The press is compact but there's one gap. What do you choose?",
+    options: [
+      "Always recycle sideways — safe possession beats the press",
+      "Read it: if the gap is real and the run is on, play through. If not, recycle.",
+      "Always try to play forward — that's the whole point",
+      "Always go backwards and let the CB reset"
+    ],
+    correct: 1,
+    explanation: "Play out the back isn't 'always forward' — it's making good decisions in possession. If the gap is real and a teammate is making the right run, play through. If the press has it closed, recycle and find a better angle. The best midfielders don't have one automatic choice — they read the press and react. Automatic forward balls are as dangerous as automatic sideways balls.",
+    tip: "'If in doubt, recycle' is a sensible rule — but the best midfielders don't doubt, because they scanned before receiving and already know what they're doing."
+  },
+
+  // ── WINGER ──
+  {
+    scope: 'winger', category: 'Pressing', difficulty: 1,
+    scenario: "The opposition's right back has the ball. Your team is pressing. You're the left winger — first line of press.",
+    question: "How do you press?",
+    options: [
+      "Sprint straight at the ball as fast as possible",
+      "Press at an angle that cuts off their inside pass — show them towards the touchline",
+      "Drop into a compact defensive shape and wait",
+      "Press from behind so they can't see you coming"
+    ],
+    correct: 1,
+    explanation: "Angled pressing is far more effective than sprinting straight. Your angle cuts off the inside option, showing the full-back towards the touchline. If you sprint straight, they simply pass inside and your press has no effect. Showing them towards the corner means any mistake is near the touchline, far from goal — and your press forces a predictable direction your teammates can read.",
+    tip: "The angle of your press dictates where the ball can go. Cut off the inside option when pressing a full-back and you control the game's direction."
+  },
+  {
+    scope: 'winger', category: 'Receiving', difficulty: 1,
+    scenario: "The ball is switched quickly from the opposite side of the pitch to you. You have space in front of you. A full-back is coming towards you.",
+    question: "What's your first thought?",
+    options: [
+      "Control it and lay it back to your full-back",
+      "Take a positive first touch into the space to attack the defender before they're set",
+      "Wait for the defender to get close, then make your decision",
+      "Play it backwards to safety"
+    ],
+    correct: 1,
+    explanation: "A switch ball to a winger is designed to create a 1v1. Your job is to attack the space before the defender is set and balanced. A positive first touch towards the defender puts them on the back foot — they haven't settled yet. Waiting for them to arrive lets them get into their defensive stance and they become much harder to beat. Attack the space. Be positive.",
+    tip: "The first touch on a switch ball is the most important. Too heavy — you lose it. Too soft — the defender gets set. Firm, angled first touch into the space."
+  },
+  {
+    scope: 'winger', category: 'Decision Making', difficulty: 2,
+    scenario: "You've beaten your full-back and are heading towards the byline. There's one CB goal-side. You can see two strikers arriving in the box.",
+    question: "What do you do?",
+    options: [
+      "Cut inside onto your stronger foot for a shot",
+      "Cross early — your strikers are arriving, let them do the work",
+      "Slow down and wait for the perfect moment",
+      "Take the CB on too and get as close as possible to the goal"
+    ],
+    correct: 1,
+    explanation: "When your strikers are arriving in the box, cross early. The timing of the cross is the key — deliver it as your strikers are running, so the ball arrives into their run. Cutting inside or waiting lets the defense recover and reorganise. Your job in this moment is to deliver the ball to the arriving runners. Let your preparation (beating the full-back) do the work.",
+    tip: "Read the box before you cross. Are runners arriving? Are they in front of or behind defenders? Cross when the runs are on — not when the box is empty."
+  },
+  {
+    scope: 'winger', category: 'Combination Play', difficulty: 2,
+    scenario: "Your full-back is overlapping on the outside of you. The opposition have tracked the overlap, leaving space inside.",
+    question: "What do you do?",
+    options: [
+      "Stay wide to maintain your position",
+      "Make an underlapping run inside — exploit the space the full-back vacated",
+      "Move towards the ball so the full-back can play you in",
+      "Drop back towards your own goal to create a passing triangle"
+    ],
+    correct: 1,
+    explanation: "When the full-back overlaps and the defense tracks it, space opens inside — exactly where you should go. This is the underlap: cutting inside into the space the full-back's run has created. The defenders can't cover both the overlap AND the underlap. If they track outside, you're free inside. Two-player combinations in wide areas are among the hardest things in football to defend.",
+    tip: "Wingers and full-backs who understand each other's movements create constant dilemmas for the defence. Talk to your full-back before the game — agree your patterns."
+  },
+  {
+    scope: 'winger', category: 'Receiving', difficulty: 2,
+    scenario: "The ball is played to you out wide. You receive it with a defender right on your back. No passing option is available immediately.",
+    question: "What do you do?",
+    options: [
+      "Try to spin and turn the defender immediately",
+      "Shield the ball and hold your ground until a teammate makes a supporting run",
+      "Kick it out of play so your team can reset",
+      "Try to win a foul by drawing contact"
+    ],
+    correct: 1,
+    explanation: "When you receive with a defender behind you and no pass on, protect the ball. Shield it with your body — your back to the defender, your arms out for balance — and hold until a teammate makes a run. This brings others into the game, forces the defender to commit, and creates the opportunity. Trying to turn immediately against a tight defender usually results in losing the ball.",
+    tip: "Holding up play is one of the most underrated skills in football. It buys time for your whole team to get into better positions. Good shielding creates goals."
+  },
+  {
+    scope: 'winger', category: 'Movement', difficulty: 3,
+    scenario: "A midfielder has the ball and has spotted you making a run in behind the opposition full-back. They're about to play the ball into the space.",
+    question: "What's the single most important thing?",
+    options: [
+      "Sprint as fast as possible to get to the ball first",
+      "Check your position against the defensive line — make sure you time it onside",
+      "Signal to the midfielder so they know you're making the run",
+      "Wait until the full-back has committed before making your run"
+    ],
+    correct: 1,
+    explanation: "Timing the run to stay onside is everything. A perfect run in behind is worthless if you're flagged. Your movement must be timed off the defensive line — you leave as the ball is played, not before. Watch the last defender's position, not the ball. Once you're onside and the pass is played, attack the space at full pace.",
+    tip: "Watch the last defender, not the passer. Your run is timed off the defensive line. Leave at the exact moment the ball is played and you'll be onside — and in behind."
+  },
+  {
+    scope: 'winger', category: 'Defending', difficulty: 3,
+    scenario: "Your team has lost the ball. The opposition are counter-attacking quickly down your side. You're 40 yards up the pitch.",
+    question: "What do you do?",
+    options: [
+      "Sprint back immediately — get between the ball and your goal",
+      "Jog back — you probably can't make it in time anyway",
+      "Stay forward to be available for a quick counter if your team wins the ball",
+      "Shout for your full-back to deal with it"
+    ],
+    correct: 0,
+    explanation: "Sprint back. Every time. Your recovery run might not get you to the ball — but it can delay, force the attacker wide, or create a block. Top wingers work as hard in defence as they do in attack. Jogging back is unacceptable. 'I'll stay for the counter' is an excuse, not a tactic — unless your coach has specifically set up a deliberate counter threat.",
+    tip: "The best wide players in the world do 12+ km per game. Sprinting 40 yards to defend, then turning and sprinting 40 yards to attack — that's what the position demands."
+  },
+  {
+    scope: 'winger', category: 'Movement', difficulty: 3,
+    scenario: "Your striker makes a run into your wide area (right side) just as you'd normally occupy it. You're now central.",
+    question: "What should you do?",
+    options: [
+      "Tell the striker to get back into their position",
+      "Rotate — move into the central striker position your teammate has vacated",
+      "Stand still so you don't confuse the shape",
+      "Drop back towards your full-back"
+    ],
+    correct: 1,
+    explanation: "Positional fluidity is fundamental to modern attacking play. When your striker runs into your space, you rotate into theirs. This keeps the attacking shape intact and creates constant unpredictability — the defence never knows who's coming from where. If both players stand still, you've lost movement and made it easy to defend. Keep rotating.",
+    tip: "Modern football asks wingers to be flexible. You'll end up central sometimes; strikers will go wide. Rotate fluidly and your team becomes very hard to defend."
+  },
+
+  // ── STRIKER ──
+  {
+    scope: 'striker', category: 'Pressing', difficulty: 1,
+    scenario: "The opposition goalkeeper has the ball. Your team is pressing high. You're the striker — first line of the press.",
+    question: "How do you press the goalkeeper?",
+    options: [
+      "Sprint straight at them as fast as possible",
+      "Press at an angle — cut off one centre-back, showing the GK towards their weaker side",
+      "Stand in the middle of the pitch and block the central pass",
+      "Wait near the halfway line to intercept any long ball"
+    ],
+    correct: 1,
+    explanation: "Angled pressing forces the goalkeeper into a corner. Your angle cuts off one centre-back and shows the GK towards the other one or towards the weaker foot. If you press straight, the GK has two easy options on either side of you. Angled pressing makes the press coordinated — your teammates can read where the ball must go and press accordingly.",
+    tip: "The angle of your press tells the goalkeeper where they can play. Cut off the easy option and you control their decision."
+  },
+  {
+    scope: 'striker', category: 'Movement', difficulty: 1,
+    scenario: "Your team is building from the back under pressure. The opposition midfielders are marking your team's midfielders tightly. There's space between their midfield and defensive lines.",
+    question: "What should you do?",
+    options: [
+      "Stay high and wide — be a target for a long ball",
+      "Drop into the space between the lines to receive and link play",
+      "Make a run in behind the defence immediately",
+      "Drop all the way back to midfield to help with possession"
+    ],
+    correct: 1,
+    explanation: "Dropping between the lines pulls a centre-back out of position or creates a numerical advantage in midfield. When you receive there, you can face goal, play a one-two, or lay off to a midfielder running beyond you. Staying high only works if there's space in behind — against a compact defence, you're just isolating yourself. Drop, receive, and play.",
+    tip: "Modern strikers drop deep constantly. Even when you don't receive, your movement disrupts the defensive shape and creates space for your teammates."
+  },
+  {
+    scope: 'striker', category: 'Movement', difficulty: 2,
+    scenario: "Your central midfielder has the ball 30 yards from goal. You can see the defensive line is high. A gap has opened in behind the last defender.",
+    question: "When do you make your run?",
+    options: [
+      "As soon as you see the space — go immediately",
+      "Time it off the pass — leave as the ball is played so you're onside",
+      "Wait for the midfielder to look up and signal",
+      "Move wide first, then cut in behind"
+    ],
+    correct: 1,
+    explanation: "Timing is everything. Leave too early and you're offside before the ball is played. The right moment is as the ball leaves the passer's foot — you and the ball move simultaneously, keeping you onside while you accelerate into the space. Waiting for a signal is too slow. Your run is timed off the defensive line, not the passer.",
+    tip: "Watch the last defender's feet, not the ball. Your run is triggered by the moment the pass is played — but your eyes read the defensive line, not the passer."
+  },
+  {
+    scope: 'striker', category: 'Receiving', difficulty: 2,
+    scenario: "The ball is played into your feet with a centre-back tight on your back. No one is immediately free to receive a pass.",
+    question: "What do you do?",
+    options: [
+      "Try to spin and turn the defender straight away",
+      "Shield the ball and hold your ground until support arrives",
+      "Head the ball back the way it came",
+      "Go to ground to try to win a foul"
+    ],
+    correct: 1,
+    explanation: "Holding up play is one of the most important striker skills in a possession-based team. When a defender is tight behind you and no pass is on, protect the ball with your body, hold your ground, and wait. This brings your midfielders into the game, forces the CB to commit, and creates the moment to play. Trying to turn immediately usually results in losing possession in a dangerous area.",
+    tip: "When you hold the ball effectively, you give your whole team time to get into better positions. Good hold-up play creates goals for others."
+  },
+  {
+    scope: 'striker', category: 'Movement', difficulty: 2,
+    scenario: "Your team is trying to break down a compact defensive block. As the striker, the defenders are tight around you and there's no direct pass into you.",
+    question: "What's the most useful thing you can do?",
+    options: [
+      "Call for the ball and stand in the box",
+      "Make a run to drag a centre-back out of the block, creating space for a midfielder",
+      "Move wide to drag one of the wide defenders across",
+      "Drop deep into midfield to help with possession"
+    ],
+    correct: 1,
+    explanation: "Against a deep block, dragging defenders out of position is often more valuable than receiving the ball. A run in behind forces a CB to follow — which creates a gap for an onrushing midfielder to exploit. Even if you don't receive, your run did its job. Many goals are scored into the space a striker's decoy run created.",
+    tip: "A striker's run doesn't need to end with the ball. If your run creates a goal for a teammate, that's a success. Movement is your primary weapon."
+  },
+  {
+    scope: 'striker', category: 'Communication', difficulty: 3,
+    scenario: "Your team is building from the back. A central midfielder is about to receive with a defender closing from behind. You're the striker, 10 yards ahead and facing the play.",
+    question: "What should you do?",
+    options: [
+      "Get into the box — be ready for a quick forward ball",
+      "Call what you see: 'Man on!', 'Turn!', or 'Time!' based on the defender's position",
+      "Move wide to give the midfielder a passing option",
+      "Stay still so you don't disrupt the shape"
+    ],
+    correct: 1,
+    explanation: "You're facing the play — you can see what's behind the midfielder. They can't see behind them without a full turn. Your call gives them information in real time: 'Man on!' means a defender is right there. 'Turn!' means they have space to turn. 'Time!' means no immediate pressure. This information is invaluable and costs you nothing. It's a communication skill as important as passing.",
+    tip: "Three calls every player should know: 'Man on!', 'Turn!', 'Time!' Use them constantly. Teams that communicate well make fewer mistakes in possession."
+  },
+  {
+    scope: 'striker', category: 'Pressing', difficulty: 3,
+    scenario: "Your team is in a coordinated press. Your striker partner has pressed the opposition CB. The CB is about to play to their holding midfielder.",
+    question: "What's your job?",
+    options: [
+      "Join your partner and double up on the CB",
+      "Cover the holding midfielder — cut off the CB's escape route",
+      "Track back to stay compact in your own half",
+      "Stay central and threaten in behind"
+    ],
+    correct: 1,
+    explanation: "Your partner presses the ball; your job is the escape route. Cover the holding midfielder — if that pass is easy, the press fails. By blocking it, the CB is trapped between your partner's press and a blocked short pass — they're forced into a mistake or a long ball under pressure. Two strikers pressing the same player leaves the midfielder free.",
+    tip: "Two-striker presses only work when each striker has a different job. One presses the ball; one covers the pass. If you both press the ball, the pass is free."
+  },
+  {
+    scope: 'striker', category: 'Finishing', difficulty: 3,
+    scenario: "You're through on goal 1v1 with the goalkeeper. A defender is closing from behind.",
+    question: "Where is your focus?",
+    options: [
+      "Stay focused on the goalkeeper — where are they showing? Shoot to the open side.",
+      "Worry about the defender closing from behind — you might get tackled",
+      "Shoot as hard as possible to guarantee it goes past the keeper",
+      "Try to round the goalkeeper"
+    ],
+    correct: 0,
+    explanation: "In a 1v1, the defender behind is irrelevant — you got there first and if they foul you, it's a penalty or red card. Focus entirely on the goalkeeper. What side are they showing? Are they coming off their line fast? Pick your spot based on what they give you and execute cleanly. Placement beats power in most 1v1 finishing situations — technique, not panic.",
+    tip: "Look at the goalkeeper, not the ball, in a 1v1. Your body executes the shot; your eyes find the spot. Pick a corner and commit."
+  },
+
+  // ── ALL OUTFIELD ──
+  {
+    scope: 'outfield', category: 'Receiving', difficulty: 1,
+    scenario: "A pass is coming to you from a teammate. A defender is 4 yards away and about to arrive.",
+    question: "What receiving body shape gives you the most options?",
+    options: [
+      "Square on to the ball — most stable receiving position",
+      "Side-on — half-turned, so you can see both the press and your forward options",
+      "Facing your own goal to protect the ball",
+      "Facing the opposition goal"
+    ],
+    correct: 1,
+    explanation: "Side-on body shape is fundamental to playing under pressure. One half of your vision is the incoming pressure — you know how much time you have. The other half shows your forward passing options. If you receive square or facing your own goal, you can only easily play it back. Side-on gives you the whole pitch before you even touch the ball.",
+    tip: "Side-on body position when receiving is one of the most important habits in modern football. It should be automatic for every player at every level."
+  },
+  {
+    scope: 'outfield', category: 'Communication', difficulty: 1,
+    scenario: "Your teammate is about to receive the ball with a defender close behind them. You can see the defender — they can't.",
+    question: "What do you call?",
+    options: [
+      "Nothing — they'll figure it out",
+      "'Man on!' — loud and immediate, so they know to shield before they turn",
+      "'Turn!' — they might have time to go forward",
+      "'Time!' — it looks OK from here"
+    ],
+    correct: 1,
+    explanation: "If a defender is right behind your teammate, shout 'Man on!' loudly and immediately. This tells them to take a safe first touch, shield the ball, and not try to turn blindly into a defender they can't see. The three key calls are 'Man on!', 'Turn!', and 'Time!' — and knowing which one to use is a real skill. In this case, the defender is close — it's 'Man on!'.",
+    tip: "'Man on! Turn! Time!' — every player should have these three calls automatic. The earlier you call, the more useful the information."
+  },
+  {
+    scope: 'outfield', category: 'Pressing', difficulty: 2,
+    scenario: "The opposition centre-back receives a pass that comes slightly behind them. They've had to reach back for it and are now off-balance.",
+    question: "Should you press right now?",
+    options: [
+      "No — wait and see if they make a mistake",
+      "Yes — this is a press trigger. They're momentarily unbalanced and can't play quickly.",
+      "Call for your striker to press instead",
+      "Hold your shape first, then press if the ball is still available"
+    ],
+    correct: 1,
+    explanation: "An off-balance first touch is a classic press trigger. The defender is temporarily unable to play a clean, quick pass. If you press immediately and aggressively, you catch them before they recover. Half a second of hesitation means the trigger window closes. Press triggers: heavy touch, back to goal in isolation, goalkeeper under pressure. React instantly when you see one.",
+    tip: "Press triggers only work if everyone reacts together. When you see one, go — and trust your teammates to cover their roles in the press."
+  },
+  {
+    scope: 'outfield', category: 'Transition', difficulty: 2,
+    scenario: "Your team has just lost the ball in the opposition half. The opposition immediately play it to an unmarked midfielder.",
+    question: "What's the priority in the first 5 seconds?",
+    options: [
+      "Sprint back into your defensive shape",
+      "Counter-press immediately — press the player with the ball and block passing lanes",
+      "Organise your defensive shape and wait for them to come forward",
+      "Call out to teammates to get back"
+    ],
+    correct: 1,
+    explanation: "The 5 seconds after losing the ball are the best chance to win it back. Counter-pressing catches the opposition disorganised and still in their attacking positions. After 5 seconds, they've settled and begun their attacking move — then you drop into defensive shape. React immediately to turnovers. Don't wait to organise.",
+    tip: "Counter-press for 5 seconds, then drop into shape. The moment you lose the ball, everyone near it presses. After 5 seconds, the chance has gone."
+  },
+  {
+    scope: 'outfield', category: 'Support Play', difficulty: 3,
+    scenario: "Your teammate has the ball and is about to be pressed. You're 8 yards away. The press is arriving fast.",
+    question: "What's the best way to support them?",
+    options: [
+      "Stay in your position — they might need you later",
+      "Get close at a supporting angle — offer a clear pass option and make yourself visible",
+      "Move away to create space for them to drive into",
+      "Call loudly from distance to draw attention"
+    ],
+    correct: 1,
+    explanation: "Close support at a good angle is what your teammate needs. Not too close (you'd be in the press too), not too far (the pass becomes too long under pressure). An angle that opens up a clean passing lane is ideal — so they can play first time if needed. Making yourself visible and getting into their peripheral vision is as important as the physical position.",
+    tip: "Supporting angles in tight spaces are a skill. Get close enough to play first time, but at an angle that takes you away from the press — not into it."
+  },
+
+  // ── WHOLE TEAM ──
+  {
+    scope: 'team', category: 'Tactics', difficulty: 2,
+    scenario: "Your team is playing out from the back. It's the last 5 minutes of a tight game and you're winning 1-0. The opposition have pushed players forward and are pressing extremely high and aggressively.",
+    question: "Should you keep playing out the back?",
+    options: [
+      "Yes — always play out the back, no matter the situation",
+      "No — in these specific circumstances, managing the ball long is the smarter choice",
+      "Only if the goalkeeper signals they're confident",
+      "Yes, but play it faster than usual"
+    ],
+    correct: 1,
+    explanation: "Playing out the back is a style, not a rule. In the last 5 minutes, winning 1-0, with a high press and a long ball target — managing the game long is a legitimate and smart choice. Risk in your own half at 1-0 in the final minutes is not the same risk as at 0-0 in the 20th minute. Good teams adapt to the moment. Playing out the back under a ferocious press late in the game is unnecessary risk.",
+    tip: "Playing style is a weapon, not a religion. The best teams know when to play out and when to manage the ball. Game situation always shapes the decision."
+  },
+  {
+    scope: 'team', category: 'Shape', difficulty: 2,
+    scenario: "Your team is defending. The opposition have the ball on the left side. Your team has shifted left to cover. A gap has opened on the right side.",
+    question: "What should the right winger be doing?",
+    options: [
+      "Staying wide on the right to be available for a quick counter",
+      "Tucking in to stay compact — closing the gap on the right side",
+      "Pressing the left back who has the ball",
+      "Dropping into the box to protect the goal"
+    ],
+    correct: 1,
+    explanation: "Defensive compactness means everyone shifts together. When the ball is on the left, the whole team shifts left — including the right winger, who tucks in towards the centre. This closes the gap the wide shift creates and makes the team hard to play through centrally. Staying wide while the ball is on the other side creates a huge space in behind on your side for their left winger to exploit.",
+    tip: "Compactness is collective. One player failing to shift can open a gap for the opposition. When the ball goes left, everyone shifts left — including the right winger."
+  },
+  {
+    scope: 'team', category: 'Tactics', difficulty: 3,
+    scenario: "Your team has just conceded a goal. The opposition are celebrating. Your team needs to restart from the centre circle. You're 0-1 down with 25 minutes left.",
+    question: "What should your team's mentality be for the restart?",
+    options: [
+      "Play it long immediately to try to score quickly",
+      "Stay composed — play your normal game. One goal down with 25 minutes left is completely recoverable.",
+      "Drop into a defensive shape and wait for a counter-attack opportunity",
+      "Push everyone forward and play direct"
+    ],
+    correct: 1,
+    explanation: "One goal down with 25 minutes left is not a crisis — it's a game situation. Panicking, going long, or abandoning your style is exactly what the opposition want. Stay with your game plan, play your football, and create chances systematically. Goals from composed, structured play are far more reliable than panicked long balls. Trust your game.",
+    tip: "The best teams respond to goals by becoming more composed, not more frantic. Play your game. The goal will come."
+  }
+
+];
+
+// ═══════════════════════════════════════════
 // DIFFICULTY ASSIGNMENT
 // ═══════════════════════════════════════════
 (function() {
@@ -1720,6 +2394,7 @@ const categories = [...new Set(questions.map(q => q.category))];
 const STREAK_BONUSES = {3: 3, 6: 3, 10: 5, 15: 5, 20: 10};
 
 let state = {
+  position: null,
   mode: 'all',
   selectedCategories: new Set(categories),
   queue: [],
@@ -1739,16 +2414,30 @@ let state = {
 // INIT
 // ═══════════════════════════════════════════
 function init() {
+  // Position screen
+  const posGrid = document.getElementById('positionGrid');
+  posGrid.innerHTML = '';
+  const posData = [
+    { id: 'goalkeeper', icon: '🧤', name: 'Goalkeeper', desc: 'Shot stopping, distribution, sweeper-keeper play and organising your defence.' },
+    { id: 'defender',   icon: '🛡️', name: 'Defender',   desc: 'Playing out from the back, covering, pressing triggers and 1v1 defending.' },
+    { id: 'midfielder', icon: '⚙️', name: 'Midfielder', desc: 'Receiving under pressure, breaking lines, pressing and supporting the attack.' },
+    { id: 'winger',     icon: '⚡', name: 'Winger',     desc: '1v1s, overlaps, pressing full-backs, crossing and recovery runs.' },
+    { id: 'striker',    icon: '🎯', name: 'Striker',    desc: 'Pressing, movement, holding up play, link-up and finishing.' },
+  ];
+  posData.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'position-card';
+    card.innerHTML = `<div class="pos-icon">${p.icon}</div><div><div class="pos-name">${p.name}</div><div class="pos-desc">${p.desc}</div></div>`;
+    card.addEventListener('click', function() { selectPosition(p); });
+    posGrid.appendChild(card);
+  });
+
+  // Category grid (goalkeeper only)
   const grid = document.getElementById('categoryGrid');
   grid.innerHTML = '';
   const icons = {
-    'Positioning': '📍',
-    'Distribution': '🦶',
-    'Shot Stopping': '🧤',
-    'Set Pieces': '⚽',
-    'Sweeper-Keeper': '🏃',
-    'Communication': '📣',
-    'Decision Making': '🧠'
+    'Positioning': '📍', 'Distribution': '🦶', 'Shot Stopping': '🧤',
+    'Set Pieces': '⚽', 'Sweeper-Keeper': '🏃', 'Communication': '📣', 'Decision Making': '🧠'
   };
   categories.forEach(cat => {
     const count = questions.filter(q => q.category === cat).length;
@@ -1759,6 +2448,29 @@ function init() {
     card.addEventListener('click', function() { toggleCategory(cat, card); });
     grid.appendChild(card);
   });
+}
+
+function selectPosition(p) {
+  state.position = p.id;
+
+  // Update start screen
+  document.getElementById('startHeading').textContent = `Ready to train, ${p.name}? ${p.icon}`;
+  document.getElementById('positionBadge').innerHTML = `${p.icon} <span class="pos-badge-name">${p.name}</span> &nbsp;· change`;
+
+  // Category filter only makes sense for goalkeeper
+  const catSection = document.getElementById('categoryGrid');
+  const catHint = catSection.nextElementSibling;
+  if (p.id === 'goalkeeper') {
+    catSection.style.display = '';
+    catHint.style.display = '';
+  } else {
+    catSection.style.display = 'none';
+    catHint.style.display = 'none';
+  }
+
+  renderLevelCard();
+  renderBestScores();
+  show('startScreen');
 }
 
 function toggleCategory(cat, el) {
@@ -1782,7 +2494,15 @@ function setMode(mode) {
 
 function buildQueue() {
   const maxDiff = getLevelForCount(getTotalAnswered()).maxDiff;
-  let pool = questions.filter(q => state.selectedCategories.has(q.category) && q.difficulty <= maxDiff);
+  let pool;
+  if (state.position === 'goalkeeper') {
+    pool = questions.filter(q => state.selectedCategories.has(q.category) && q.difficulty <= maxDiff);
+  } else {
+    pool = positionQuestions.filter(q =>
+      (q.scope === state.position || q.scope === 'outfield' || q.scope === 'team') &&
+      q.difficulty <= maxDiff
+    );
+  }
   pool = pool.sort(() => Math.random() - 0.5);
   if (state.mode === 'random10') pool = pool.slice(0, Math.min(10, pool.length));
   if (state.mode === 'random20') pool = pool.slice(0, Math.min(20, pool.length));
@@ -2107,12 +2827,13 @@ function redoWrong() {
 // NAVIGATION
 // ═══════════════════════════════════════════
 function show(id) {
-  ['startScreen','quizScreen','endScreen'].forEach(s => {
+  ['positionScreen','startScreen','quizScreen','endScreen'].forEach(s => {
     document.getElementById(s).classList.toggle('hidden', s !== id);
   });
 }
 
 function goToStart() {
+  if (!state.position) { show('positionScreen'); return; }
   renderLevelCard();
   renderBestScores();
   show('startScreen');
@@ -2170,8 +2891,8 @@ function resetScores() {
 
 // ── Start ──
 init();
-renderLevelCard();
-renderBestScores();
+// Start on position screen; show() will unhide it
+show('positionScreen');
 </script>
 </body>
 </html>
