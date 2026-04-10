@@ -292,10 +292,34 @@
 
     .btn-skip:hover { color: #7a9cc4; border-color: #2a4a6a; }
 
+    /* ── Bonus toast ── */
+    .bonus-toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #f2c94c;
+      color: #0a1628;
+      font-size: 1rem;
+      font-weight: 800;
+      padding: 8px 22px;
+      border-radius: 20px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 999;
+      transition: opacity 0.2s, transform 0.2s;
+      white-space: nowrap;
+    }
+
+    .bonus-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     /* ── Score panel ── */
     .score-strip {
       display: flex;
-      gap: 24px;
+      gap: 16px;
       padding: 12px 0;
       margin-bottom: 16px;
       border-bottom: 1px solid #1e3a56;
@@ -557,9 +581,15 @@
     <div class="best-scores" id="bestScoresPanel"></div>
   </div>
 
+  <div class="bonus-toast" id="bonusToast"></div>
+
   <!-- Quiz screen -->
   <div id="quizScreen" class="hidden">
     <div class="score-strip">
+      <div class="score-item">
+        <div class="val" id="scorePoints" style="color:#f2c94c">0</div>
+        <div class="lbl">Points ⭐</div>
+      </div>
       <div class="score-item">
         <div class="val" id="scoreCorrect">0</div>
         <div class="lbl">Correct</div>
@@ -608,6 +638,7 @@
     <h2>Full Time!</h2>
     <div class="grade" id="gradeEmoji"></div>
     <p id="endScoreText" style="font-size:1.3rem; font-weight:700; color:#e8f0fe;"></p>
+    <p id="endPointsText" style="font-size:1.5rem; font-weight:800; color:#f2c94c; margin:4px 0 8px;"></p>
     <p id="endMessage"></p>
     <div class="breakdown" id="categoryBreakdown"></div>
     <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:8px;">
@@ -1515,6 +1546,8 @@ const questions = [
 // GAME STATE
 // ═══════════════════════════════════════════
 const categories = [...new Set(questions.map(q => q.category))];
+const STREAK_BONUSES = {3: 3, 6: 3, 10: 5, 15: 5, 20: 10};
+
 let state = {
   mode: 'all',
   selectedCategories: new Set(categories),
@@ -1523,6 +1556,7 @@ let state = {
   correct: 0,
   wrong: 0,
   streak: 0,
+  points: 0,
   answered: false,
   categoryStats: {},
   wrongAnswers: []
@@ -1589,6 +1623,7 @@ function startGame() {
   state.correct = 0;
   state.wrong = 0;
   state.streak = 0;
+  state.points = 0;
   state.answered = false;
   state.categoryStats = {};
   state.wrongAnswers = [];
@@ -1652,7 +1687,13 @@ function selectAnswer(chosen) {
   if (isCorrect) {
     state.correct++;
     state.streak++;
+    state.points++;
     state.categoryStats[q.category].correct++;
+    const bonus = STREAK_BONUSES[state.streak];
+    if (bonus) {
+      state.points += bonus;
+      showBonusToast(`🔥 ${state.streak} in a row! +${bonus} bonus pts`);
+    }
   } else {
     state.wrong++;
     state.streak = 0;
@@ -1759,9 +1800,19 @@ function showExplanation(q, isCorrect) {
 }
 
 function updateScoreBar() {
+  document.getElementById('scorePoints').textContent = state.points;
   document.getElementById('scoreCorrect').textContent = state.correct;
   document.getElementById('scoreWrong').textContent = state.wrong;
   document.getElementById('scoreStreak').textContent = state.streak;
+}
+
+let bonusToastTimer = null;
+function showBonusToast(msg) {
+  const toast = document.getElementById('bonusToast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  if (bonusToastTimer) clearTimeout(bonusToastTimer);
+  bonusToastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
 function nextQuestion() {
@@ -1791,10 +1842,11 @@ function showEnd() {
   else if (pct >= 60) { grade='Developing'; emoji='💪'; msg='Good foundation. Review the explanations on the ones you missed — they\'ll come quickly.'; }
   else { grade='Keep Training'; emoji='📚'; msg='Don\'t worry — these are tough scenarios. Go through the explanations and try again.'; }
 
-  saveScore(pct, state.correct, total, state.mode);
+  saveScore(state.points, pct, state.correct, total, state.mode);
 
   document.getElementById('gradeEmoji').textContent = emoji;
   document.getElementById('endScoreText').textContent = `${state.correct}/${total} — ${pct}% — ${grade}`;
+  document.getElementById('endPointsText').textContent = `⭐ ${state.points} points`;
   document.getElementById('endMessage').textContent = msg;
 
   const breakdown = document.getElementById('categoryBreakdown');
@@ -1822,6 +1874,7 @@ function redoWrong() {
   state.correct = 0;
   state.wrong = 0;
   state.streak = 0;
+  state.points = 0;
   state.answered = false;
   state.categoryStats = {};
   state.wrongAnswers = [];
@@ -1849,12 +1902,12 @@ function goToStart() {
 // ═══════════════════════════════════════════
 // BEST SCORES
 // ═══════════════════════════════════════════
-function saveScore(pct, correct, total, mode) {
+function saveScore(points, pct, correct, total, mode) {
   const scores = loadScores();
   const modeLabels = { all: 'All Qs', random10: 'Quick 10', random20: 'Match 20', random30: 'Full 30' };
   const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  scores.push({ pct, correct, total, mode: modeLabels[mode] || mode, date });
-  scores.sort((a, b) => b.pct - a.pct || b.correct - a.correct);
+  scores.push({ points, pct, correct, total, mode: modeLabels[mode] || mode, date });
+  scores.sort((a, b) => b.points - a.points || b.pct - a.pct);
   scores.splice(5); // keep top 5
   try { localStorage.setItem('gk_best_scores', JSON.stringify(scores)); } catch(e) {}
 }
@@ -1871,8 +1924,8 @@ function renderBestScores() {
   panel.innerHTML = '<h3>Best Scores</h3>' + scores.map((s, i) =>
     `<div class="score-row">
       <span class="score-rank">${medals[i]}</span>
-      <span class="score-pct">${s.pct}%</span>
-      <span style="color:#e8f0fe; font-weight:700">${s.correct}/${s.total}</span>
+      <span class="score-pct">${s.points != null ? s.points + ' pts' : s.pct + '%'}</span>
+      <span style="color:#e8f0fe; font-weight:700">${s.correct}/${s.total} &nbsp;<span style="color:#4a7a9b;font-size:0.78rem">${s.pct}%</span></span>
       <span class="score-detail">${s.mode}<br>${s.date}</span>
     </div>`
   ).join('');
