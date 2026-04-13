@@ -24,11 +24,19 @@ Key components of the JS app logic:
 
 Quiz modes: All Questions, Quick 10, Match 20, Full 30.
 
+## Deployment
+
+Hosted on GitHub Pages at https://tfin22.github.io/goalie/. Pushes to `main` auto-deploy via `.github/workflows/pages.yml`.
+
 ## Development
 
 Open `index.html` directly in a browser — no build step, no dev server needed. To test changes, refresh the page.
 
 There are no tests, linters, or CI pipelines.
+
+## iOS Compatibility
+
+iOS does not execute JavaScript in locally opened HTML files (WhatsApp file preview, Files app Quick Look, etc.). The app must be accessed via a URL (e.g. the GitHub Pages link) to work on iPhones. All interactive elements use `touch-action: manipulation` and `-webkit-tap-highlight-color` for responsive taps on iOS. Category card child elements have `pointer-events: none` so taps register on the card itself. Dynamically created elements use `addEventListener` instead of `.onclick` for WKWebView reliability.
 
 ## Content Guidelines
 
